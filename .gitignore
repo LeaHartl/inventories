@@ -1,0 +1,6 @@
+out/
+figs/
+*.dat
+*.png
+**/.DS_Store
+**/__pycache__/
