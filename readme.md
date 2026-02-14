@@ -16,3 +16,9 @@
 
 # helpers_plots.py	
 - functions to make plots
+
+
+# process_inv_comparisons.py		
+- load AGI2,3,4,5; RGI, C3s inventories	
+- extract outlines for AT from RGI and C3s (centroid in Austria)	
+- compute some comparisons and make a figure 		

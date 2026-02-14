@@ -23,8 +23,6 @@ def getGI(fls, strnr):
         # extract region name from the file path:
         reg = f.split('/')[-1]
         r = reg[:strnr]
-        
-    
         # load regional GI file:
         GIreg = gpd.read_file(f)
         GIreg.to_crs(epsg=31287, inplace=True)
@@ -101,7 +99,7 @@ def subregions(GI5):
     # merge all subregions:
     allregs = pd.concat([salzb, stb, otz, silvT, VBG17])
     allregs = allregs[['id', 'name', 'year_mid', 'area_mid', 'geometry']]
-
+    allregs['area_mid'] = allregs.geometry.area
     return(allregs)
 
 
@@ -195,6 +193,43 @@ def forMappingExp(GI3, GI5):
 
 
 ## ------ process and produce output -----------
+
+# function to set size dependent relative uncertainties with extra AGI5 categories for outline QF
+def add_reluncertainties(ol, arcol):
+    # currently not using exploded version!
+    ol['area_unc_r'] = np.nan
+    ol['area'] = ol[arcol]
+    ol.loc[ol.area > 1e6, 'area_unc_r'] = 0.015
+    ol.loc[(ol.area < 1e6) & (ol.area >= 0.1e6), 'area_unc_r'] = 0.05
+    ol.loc[(ol.area < 0.1e6) & (ol.area >= 0.05e6), 'area_unc_r'] = 0.10
+    ol.loc[(ol.area < 0.05e6), 'area_unc_r'] = 0.25
+
+    # if outline QF is 2 or 3, apply uncertainties independent of size (overwrite the others)
+    ol.loc[ol['outline_qf'] == 2, 'area_unc_r'] = 0.25
+    ol.loc[ol['outline_qf'] == 3, 'area_unc_r'] = 0.50
+
+    # absolute uncertainties
+    ol['unc_abs_GI5'] = ol.area * ol['area_unc_r']
+    ol.drop(columns=['area'], inplace=True)
+    return(ol)
+
+
+# function to set size dependent relative uncertainties as per AGI3
+def add_reluncertaintiesGI3(ol, arcol):
+    # currently not using exploded version!
+    ol['area_unc_r'] = np.nan
+    ol['area'] = ol[arcol]
+    ol.loc[ol.area > 1e6, 'area_unc_r'] = 0.015
+    ol.loc[ol.area <= 1e6, 'area_unc_r'] = 0.05
+
+    ol['unc_abs_GI3'] = ol.area * ol['area_unc_r']
+    ol.drop(columns=['area'], inplace=True)
+    return(ol)
+
+
+
+
+
 # group by region and compute regional summary stats:
 def prepareTable(GI_merge, GI3, GI5, goneglaciers):
     grouped = GI_merge[['region_GI3', 'area_GI5', 'area_GI3']].groupby('region_GI3').sum()
@@ -414,10 +449,13 @@ def lossrates(GI_merge, allregs, GILIA, GI1, GI2, GI3, GI5, goneglaciers):
     # prepare a df to make an output table with loss rates in different periods:
     # homogenize names a bit to loop:
     GI3GI5 = GI_merge.rename(columns={'loss_rate': 'rate'})
+
     GI3Mid = all_mrg.loc[~all_mrg['r1'].isnull()]
-    GI3Mid = GI3Mid.rename(columns={'r1': 'rate'})
+    GI3Mid.drop(columns='KMrate', inplace=True)
+    GI3Mid = GI3Mid.rename(columns={'r1': 'rate', 'KMr1': 'KMrate'})
     MidGI5 = all_mrg.loc[~all_mrg['r2'].isnull()]
-    MidGI5 = MidGI5.rename(columns={'r2': 'rate'})
+    MidGI5.drop(columns='KMrate', inplace=True)
+    MidGI5 = MidGI5.rename(columns={'r2': 'rate', 'KMr2': 'KMrate'})
 
     dfRates = pd.DataFrame(columns=['GI1-GI2', 'GI2-GI3', 'GI3-GI5', 'GI3-mid', 'mid-GI5'], index=['mean', 'median'])
 
@@ -621,6 +659,21 @@ def sinceLIA(GILIA, GI1, GI2, GI3, GI5):
     return(df_prc, df_abs)
 
 ## ------ misc -----------
+
+# get area weighted year from "year" column
+def arWeightYear(inv):
+    inv['year'] = inv['year'].astype(int)
+    df = pd.DataFrame(columns=inv['year'].astype(int).unique())
+    arTot = inv.geometry.area.sum()
+
+    for yr in inv['year'].astype(int).unique():
+        arPrc = inv.loc[inv['year']==yr].geometry.area.sum() / arTot
+        df.loc['val', yr] = arPrc
+    df = df.T
+    df['calc'] = df.index*df.val
+    wY = df['calc'].sum() / df['val'].sum()
+    return (wY)
+
 
 
 # DEM processing (hypsometry)

@@ -168,27 +168,23 @@ GI1GI2, GI2GI3, all_mrg = hlp.lossrates(GI_merge, subregs, GILIA, GI1, GI2, GI3,
 
 
 
-
-
-
-
 #######  OUTPUT #######
-# get hypsometry all regions, save to csv
-# extract data from DEM for elevation plots (SLOW!!)
-demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
-demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
+# # get hypsometry all regions, save to csv
+# # extract data from DEM for elevation plots (SLOW!!)
+# demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
+# demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
 
-print('getting elevation data - study region')
-# get area that has disappeared:
-GI3m = GI3.dissolve()
-GI5m = GI5.dissolve()
-arealost = GI3m.overlay(GI5m, how='difference')
-# produces 'df_area_elevation.csv'
-hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
-# get hypsometry per region 
-print('getting elevation data - regional')
-# produces 'regions_medianElevation.csv'
-hlp.getHypsRegions(demFn, GI5)
+# print('getting elevation data - study region')
+# # get area that has disappeared:
+# GI3m = GI3.dissolve()
+# GI5m = GI5.dissolve()
+# arealost = GI3m.overlay(GI5m, how='difference')
+# # produces 'df_area_elevation.csv'
+# hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
+# # get hypsometry per region 
+# print('getting elevation data - regional')
+# # produces 'regions_medianElevation.csv'
+# hlp.getHypsRegions(demFn, GI5)
 
 # make figure showing stacked area since LIA and historgrams of change rates:
 # 'figures/loss_stacked_1850_panelsBARS.png'    
@@ -197,7 +193,8 @@ hlpplots.loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs)
 # gi3, 5 and for the vanishing glaciers & bars of change rates per size class & scatter of change rates & vanishing glaciers
 # 'figures/glacierwise_overview'   
 hlpplots.rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers)
-
+plt.show()
+stop
 
 ## requires the following csv files to be present in "outfolder"
 ## 'summary_area_changesGI3GI5.csv', 'df_area_elevation.csv', 'regions_medianElevation.csv'

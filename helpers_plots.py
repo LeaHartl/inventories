@@ -396,10 +396,10 @@ def loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
     ax3 = fig.add_subplot(gs[-1, 2])
     
     ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
-    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI1-GI2, n='+str(len(GI1GI2['rate'].values)))
+    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI1-GI2, n='+str(len(GI1GI2['id'].unique())))
 
     ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
-    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI2-GI3, n='+str(len(GI2GI3['rate'].values)))
+    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI2-GI3, n='+str(len(GI2GI3['id'].unique())))
 
     toplot = all_mrg.loc[~all_mrg['loss_rate'].isnull()]
     ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
