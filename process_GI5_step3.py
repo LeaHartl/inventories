@@ -37,41 +37,6 @@ fls_vanished = glob.glob(folder_new+'**_vanished_glaciers_GI3outline.geojson')
 
 
 
-# function to set size dependent relative uncertainties
-def add_reluncertainties(ol, arcol):
-    # currently not using exploded version!
-    ol['area_unc_r'] = np.nan
-    ol['area'] = ol[arcol]
-    ol.loc[ol.area > 1e6, 'area_unc_r'] = 0.015
-    ol.loc[(ol.area < 1e6) & (ol.area >= 0.1e6), 'area_unc_r'] = 0.05
-    ol.loc[(ol.area < 0.1e6) & (ol.area >= 0.05e6), 'area_unc_r'] = 0.10
-    ol.loc[(ol.area < 0.05e6), 'area_unc_r'] = 0.25
-
-    # if outline QF is 2 or 3, apply uncertainties independent of size (overwrite the others)
-    ol.loc[ol['outline_qf'] == 2, 'area_unc_r'] = 0.25
-    ol.loc[ol['outline_qf'] == 3, 'area_unc_r'] = 0.50
-
-    # absolute uncertainties
-    ol['unc_abs_GI5'] = ol.area * ol['area_unc_r']
-    ol.drop(columns=['area'], inplace=True)
-    return(ol)
-
-
-# function to set size dependent relative uncertainties.
-def add_reluncertaintiesGI3(ol, arcol):
-    # currently not using exploded version!
-    ol['area_unc_r'] = np.nan
-    ol['area'] = ol[arcol]
-    ol.loc[ol.area > 1e6, 'area_unc_r'] = 0.015
-    ol.loc[ol.area <= 1e6, 'area_unc_r'] = 0.05
-
-    ol['unc_abs_GI3'] = ol.area * ol['area_unc_r']
-    ol.drop(columns=['area'], inplace=True)
-    return(ol)
-
-
-
-
 
 
 ## ------------ load GI files ----------------
@@ -129,9 +94,9 @@ GI_merge['area_GI5'] = GI_merge['area_GI5'].fillna(0)
 GI_merge['year_GI5'] = GI_merge['year_GI5'].fillna(2023)
 
 # add uncertainty columns for GI5:
-GI_merge = add_reluncertainties(GI_merge, 'area_GI5')
+GI_merge = hlp.add_reluncertainties(GI_merge, 'area_GI5')
 # add uncertainty columns for GI3 (different categories, as in GI3 paper; Aberman et al 2010 values)
-GI_merge = add_reluncertaintiesGI3(GI_merge, 'area_GI3')
+GI_merge = hlp.add_reluncertaintiesGI3(GI_merge, 'area_GI3')
 
 # add uncertainties in change:
 # use this for the sum of the squares:
@@ -169,22 +134,22 @@ GI1GI2, GI2GI3, all_mrg = hlp.lossrates(GI_merge, subregs, GILIA, GI1, GI2, GI3,
 
 
 #######  OUTPUT #######
-# # get hypsometry all regions, save to csv
-# # extract data from DEM for elevation plots (SLOW!!)
-# demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
-# demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
+# get hypsometry all regions, save to csv
+# extract data from DEM for elevation plots (SLOW!!)
+demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
+demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
 
-# print('getting elevation data - study region')
-# # get area that has disappeared:
-# GI3m = GI3.dissolve()
-# GI5m = GI5.dissolve()
-# arealost = GI3m.overlay(GI5m, how='difference')
-# # produces 'df_area_elevation.csv'
-# hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
-# # get hypsometry per region 
-# print('getting elevation data - regional')
-# # produces 'regions_medianElevation.csv'
-# hlp.getHypsRegions(demFn, GI5)
+print('getting elevation data - study region')
+# get area that has disappeared:
+GI3m = GI3.dissolve()
+GI5m = GI5.dissolve()
+arealost = GI3m.overlay(GI5m, how='difference')
+# produces 'df_area_elevation.csv'
+hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
+# get hypsometry per region 
+print('getting elevation data - regional')
+# produces 'regions_medianElevation.csv'
+hlp.getHypsRegions(demFn, GI5)
 
 # make figure showing stacked area since LIA and historgrams of change rates:
 # 'figures/loss_stacked_1850_panelsBARS.png'    
@@ -193,8 +158,6 @@ hlpplots.loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs)
 # gi3, 5 and for the vanishing glaciers & bars of change rates per size class & scatter of change rates & vanishing glaciers
 # 'figures/glacierwise_overview'   
 hlpplots.rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers)
-plt.show()
-stop
 
 ## requires the following csv files to be present in "outfolder"
 ## 'summary_area_changesGI3GI5.csv', 'df_area_elevation.csv', 'regions_medianElevation.csv'

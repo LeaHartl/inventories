@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -7,16 +6,16 @@ from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-
 import rioxarray as rxr
 from rasterio.plot import show
 import rasterio as rio
 import glob
 from matplotlib.gridspec import GridSpec
-
 from shapely.geometry import box
-
 from matplotlib_scalebar.scalebar import ScaleBar
+
+
+
 # get the files:
 # folder:
 fldr = '/Users/leahartl/Desktop/inventare_2025/roundrobin/Upload_outlines_v1/'
@@ -34,41 +33,31 @@ def getbox(bounds, refcrs):
     df['box'] = 'box'
     geodf = gpd.GeoDataFrame(df, geometry=[box1])
     geodf.set_crs(refcrs, inplace=True)
-    # geodf = geodf.to_crs(epsg=4326)
-
     return (geodf)
 
-
-
 def plts(orthoL, orthoS):
-    fig, ax = plt.subplots(1, 1, figsize=(7,7))#, sharex=True)
-    # ax = ax.flatten()
+    fig, ax = plt.subplots(1, 1, figsize=(7, 7))
+
     MS = gpd.read_file('out/subset_oetztal_MS.geojson')
-    
     IGF = gpd.read_file('out/subset_oetztal_IGF.geojson')
     
-
-    # fig, ax = plt.subplot_mosaic([['a', 'b'], ['c', 'd']], figsize=(9, 6), layout='constrained')
-    # fig, ax = plt.subplots(1, 1, layout='constrained', figsize=(10, 7))
     ax_ins0 = ax.inset_axes([0.0, 1.1, 0.7, 0.7])
 
-    # wurt
+    # small ortho
     with rio.open(orthoS) as src1:
         s = src1.read()
         MS = MS.to_crs(src1.crs)
         IGF = IGF.to_crs(src1.crs)
         print(src1.crs)
         show(s, transform=src1.transform, ax=ax)
-        # show(s, transform=src1.transform, ax=ax_ins0)
         bounds = src1.bounds
 
+    # larger ortho
     with rio.open(orthoL) as src2:
         s2 = src2.read()
         show(s2, transform=src2.transform, ax=ax_ins0)
         bounds2 = src2.bounds
 
-
-    
     MS.boundary.plot(ax=ax, color='blue')#, linewidth=1)
     IGF.boundary.plot(ax=ax, color='cyan')#, linewidth=1)
     
@@ -109,10 +98,7 @@ def plts(orthoL, orthoS):
 
     l1 = Line2D([0], [0], label='Analyst A', color='blue', linewidth=1, linestyle='-')
     l2 = Line2D([0], [0], label='Analyst B', color='cyan', linewidth=1, linestyle='-')
-    
-    
 
-    # plt.tight_layout()
     fig.legend([l1, l2], ['Analyst A', 'Analyst B'], loc='upper right', bbox_to_anchor=(0.9, 0.9))
     fig.savefig('figures/Vernagt.png', bbox_inches='tight', dpi=200)
     plt.show()

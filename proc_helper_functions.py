@@ -38,9 +38,6 @@ def getGI(fls, strnr):
         if 'Gletschern' in GIreg.columns:
             GIreg.rename(columns={'Gletschern': 'name'}, inplace=True)
 
-        # print(GIreg['year'].dtypes)
-        # # print(GIreg.loc[(GIreg['year']>2005) | (GIreg['year']<1994) ])
-        # print(GIreg['year'])
         if 'year' in GIreg.columns:
             GIreg['year'] = GIreg['year'].astype(int)
         GIlist.append(GIreg)
