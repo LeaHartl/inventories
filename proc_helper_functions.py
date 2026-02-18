@@ -42,7 +42,7 @@ def getGI(fls, strnr):
             GIreg['year'] = GIreg['year'].astype(int)
         GIlist.append(GIreg)
 
-    GI = pd.concat(GIlist)
+    GI = pd.concat(GIlist, ignore_index=True)
 
     # add lat lon centroids
     GI['x'] = GI.centroid.to_crs(epsg=4236).x
@@ -50,6 +50,9 @@ def getGI(fls, strnr):
 
     # sort by region
     GI.sort_values(by='region')
+
+    GI.id = GI.id.astype(int)
+    # gdf_agi5.year = gdf_agi5.year.astype(int)
 
     return(GI)
 

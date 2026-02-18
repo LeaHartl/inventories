@@ -103,6 +103,7 @@ for a in [ax[0], ax[1], ax[2], ax[3]]:
     a.set_xlim(bounds[0], 449980)#bounds[2])
     a.set_ylim(bounds[1], bounds[3])
     a.set_xticks([447000, 448000, 449000])#, 450000])
+    a.set_yticks([209000, 209500, 210000, 210500])
 
     AnkGI3.boundary.plot(ax=a, color='k', linestyle='--', linewidth=0.5, label='AGI 3')
     AnkGI5.boundary.plot(ax=a, color='k', linestyle='-', linewidth=0.5, label='AGI 5')
@@ -119,9 +120,9 @@ for a in [ax[0], ax[1]]:
     a.set_xticklabels('')
 
 ax[0].set_title('Großelend Kees, hillshade 2010')
-ax[1].set_title('Großelend Kees, hillshade 2023')
-ax[3].set_title('Großelend Kees, DoD 2023-2010')
-ax[2].set_title('Großelend Kees, orthophoto 2022')
+ax[1].set_title('Hillshade 2023')
+ax[3].set_title('DoD 2023-2010')
+ax[2].set_title('Orthophoto 2022')
 
 ax[2].legend(loc='upper center')
 
@@ -203,11 +204,11 @@ ax02.annotate("g",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
 ax00.set_title('N. Schalf Ferner, 2015')
-ax01.set_title('N. Schalf Ferner, 2020')
-ax02.set_title('N. Schalf Ferner, 2023')
+ax01.set_title('2020')
+ax02.set_title('2023')
 
 
-fig.savefig('figures/data_example_GrossElendKees.png', bbox_inches='tight', dpi=200)
+fig.savefig('figures/data_example.png', bbox_inches='tight', dpi=200)
 plt.show()
 
 

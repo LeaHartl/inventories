@@ -4,3 +4,5 @@ figs/
 *.png
 **/.DS_Store
 **/__pycache__/
+GI_consistency_checks.py
+GI_consistency_checks_icedivides.py

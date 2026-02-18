@@ -1,0 +1,190 @@
+id,other_id,int_area_m2,crt_name,crt_region
+4026,6112,8171.602957485769,"363    Hoffmanns Kees
+Name: name, dtype: object","363    Glocknergruppe
+Name: region, dtype: object"
+2129,2132,6926.480151237813,"680    Kesselwand Ferner
+Name: name, dtype: object","680    Oetztaler_Alpen
+Name: region, dtype: object"
+5053,5071,6567.4596890807,"382    Hochgruber Kees
+Name: name, dtype: object","382    Glocknergruppe
+Name: region, dtype: object"
+4027,4026,6108.608291267303,"364    Pasterzen Kees
+Name: name, dtype: object","364    Glocknergruppe
+Name: region, dtype: object"
+4027,6108,4086.632205055814,"364    Pasterzen Kees
+Name: name, dtype: object","364    Glocknergruppe
+Name: region, dtype: object"
+6035,6034,3428.7021087933954,"232    Welitz Kees N1
+Name: name, dtype: object","232    Venedigergruppe
+Name: region, dtype: object"
+2042,2041,3312.6685101379776,"479    Östlicher Scheiblehn Ferner E ob.
+Name: name, dtype: object","479    Stubaier_Alpen
+Name: region, dtype: object"
+5021,5020,2336.315989060719,"287    Schlapperebenkees
+Name: name, dtype: object","287    Sonnblickgruppe
+Name: region, dtype: object"
+14015,2133,2141.165249202339,"759    Taschach Ferner W
+Name: name, dtype: object","759    Oetztaler_Alpen
+Name: region, dtype: object"
+6074,6075,1906.7624563603085,"265    Knorr Kees W
+Name: name, dtype: object","265    Venedigergruppe
+Name: region, dtype: object"
+14015,14014,1696.5048605609954,"759    Taschach Ferner W
+Name: name, dtype: object","759    Oetztaler_Alpen
+Name: region, dtype: object"
+7015,7014,1650.876738139528,"728    Bligg Ferner S
+Name: name, dtype: object","728    Oetztaler_Alpen
+Name: region, dtype: object"
+9101,9106,1618.5495042223317,"162    Federbett Kees
+Name: name, dtype: object","162    Zillertaler_Alpen
+Name: region, dtype: object"
+14032,7012,1525.3843340768422,"775    Nördlicher Löcher Ferner
+Name: name, dtype: object","775    Oetztaler_Alpen
+Name: region, dtype: object"
+9002,9003,1454.0378861778706,"71    Wildgerlos Kees E
+Name: name, dtype: object","71    Zillertaler_Alpen
+Name: region, dtype: object"
+6103,6102,1313.3234821969445,"586    Kalser Tauern Kees N
+Name: name, dtype: object","586    Granatspitzgruppe
+Name: region, dtype: object"
+2009,2008,1100.82817193582,"448    Griesskogel Ferner
+Name: name, dtype: object","448    Stubaier_Alpen
+Name: region, dtype: object"
+3058,3057,1023.3756291103307,"534    Berglas Ferner
+Name: name, dtype: object","534    Stubaier_Alpen
+Name: region, dtype: object"
+2129,7022,779.7113784099713,"680    Kesselwand Ferner
+Name: name, dtype: object","680    Oetztaler_Alpen
+Name: region, dtype: object"
+7015,14018,735.4545074985087,"728    Bligg Ferner S
+Name: name, dtype: object","728    Oetztaler_Alpen
+Name: region, dtype: object"
+2006,2005,712.8081757468037,"445    Zwiselbach Ferner W
+Name: name, dtype: object","445    Stubaier_Alpen
+Name: region, dtype: object"
+14040,14039,590.7935892786361,"783    Seebach Ferner
+Name: name, dtype: object","783    Oetztaler_Alpen
+Name: region, dtype: object"
+4036,5031,500.0716077867175,"279    Kleinfleißkees
+Name: name, dtype: object","279    Sonnblickgruppe
+Name: region, dtype: object"
+4023,4022,455.7538510445844,"360    Schwerteck Kees M
+Name: name, dtype: object","360    Glocknergruppe
+Name: region, dtype: object"
+9064,9073,396.1152687196694,"127    Floiten Kees
+Name: name, dtype: object","127    Zillertaler_Alpen
+Name: region, dtype: object"
+5014,21022,316.22682524383964,"325    NN
+Name: name, dtype: object","325    Ankogel_Hochalmspitzgruppe
+Name: region, dtype: object"
+5097,6092,301.2320252059529,"564    Sonnblick Kees
+Name: name, dtype: object","564    Granatspitzgruppe
+Name: region, dtype: object"
+5077,5086,252.16874083822117,"405    Hochweissenfeld Kees
+Name: name, dtype: object","405    Glocknergruppe
+Name: region, dtype: object"
+5123,5129,226.90851180369037,"201    Untersulzbach Kees
+Name: name, dtype: object","201    Venedigergruppe
+Name: region, dtype: object"
+6053,6054,220.12872853451873,"248    Rainer Kees
+Name: name, dtype: object","248    Venedigergruppe
+Name: region, dtype: object"
+9097,9110,216.19673849415582,"159    Grosser Riepen Kees
+Name: name, dtype: object","159    Zillertaler_Alpen
+Name: region, dtype: object"
+5054,5068,207.26831454167723,"383    Teufelsmühl Kees
+Name: name, dtype: object","383    Glocknergruppe
+Name: region, dtype: object"
+3060,1002,173.03460174899072,"536    Lisenser Ferner Berglas
+Name: name, dtype: object","536    Stubaier_Alpen
+Name: region, dtype: object"
+6107,4027,141.51977104467497,"424    Laperwitz Kees
+Name: name, dtype: object","424    Glocknergruppe
+Name: region, dtype: object"
+5093,4027,138.07731454001353,"419    Riffl Kees S
+Name: name, dtype: object","419    Glocknergruppe
+Name: region, dtype: object"
+14014,2133,119.50823176463511,"758    Taschach Ferner E
+Name: name, dtype: object","758    Oetztaler_Alpen
+Name: region, dtype: object"
+5087,5077,107.60577878159458,"413    Oberer Hocheiser Kees W
+Name: name, dtype: object","413    Glocknergruppe
+Name: region, dtype: object"
+6108,6110,102.87002610974736,"425    Fruschnitz Kees
+Name: name, dtype: object","425    Glocknergruppe
+Name: region, dtype: object"
+3002,3003,82.85669769270125,"47    Wildlahner Ferner
+Name: name, dtype: object","47    Zillertaler_Alpen
+Name: region, dtype: object"
+4027,5073,61.28419934379844,"364    Pasterzen Kees
+Name: name, dtype: object","364    Glocknergruppe
+Name: region, dtype: object"
+2110,2111,56.71981322411003,"663    Marzell Ferner
+Name: name, dtype: object","663    Oetztaler_Alpen
+Name: region, dtype: object"
+5056,5066,56.165610866070836,"385    Sandboden Kees
+Name: name, dtype: object","385    Glocknergruppe
+Name: region, dtype: object"
+2150,14007,50.064537836238515,"697    Rettenbach Ferner
+Name: name, dtype: object","697    Oetztaler_Alpen
+Name: region, dtype: object"
+14008,2136,45.80487303966643,"753    Mittelberg Ferner
+Name: name, dtype: object","753    Oetztaler_Alpen
+Name: region, dtype: object"
+5053,5069,45.249101244433746,"382    Hochgruber Kees
+Name: name, dtype: object","382    Glocknergruppe
+Name: region, dtype: object"
+14015,14016,44.408933343936916,"759    Taschach Ferner W
+Name: name, dtype: object","759    Oetztaler_Alpen
+Name: region, dtype: object"
+5066,5068,43.22798776856264,"394    Wielinger Kees
+Name: name, dtype: object","394    Glocknergruppe
+Name: region, dtype: object"
+9015,9016,42.446606735953985,"83    Ziller Kees
+Name: name, dtype: object","83    Zillertaler_Alpen
+Name: region, dtype: object"
+7022,2128,40.619720842788176,"734    Gepatsch Ferner
+Name: name, dtype: object","734    Oetztaler_Alpen
+Name: region, dtype: object"
+4027,6112,38.33267105365791,"364    Pasterzen Kees
+Name: name, dtype: object","364    Glocknergruppe
+Name: region, dtype: object"
+5093,5073,32.48626684947128,"419    Riffl Kees S
+Name: name, dtype: object","419    Glocknergruppe
+Name: region, dtype: object"
+6033,6034,31.278111114744036,"230    Welitz Kees S
+Name: name, dtype: object","230    Venedigergruppe
+Name: region, dtype: object"
+6088,6090,22.628909726621536,"575    Daber Kees N
+Name: name, dtype: object","575    Granatspitzgruppe
+Name: region, dtype: object"
+5141,6045,20.658324523524133,"219    Krimmler Kees
+Name: name, dtype: object","219    Venedigergruppe
+Name: region, dtype: object"
+9099,9110,20.554946078022585,"161    Friesenberg Kees
+Name: name, dtype: object","161    Zillertaler_Alpen
+Name: region, dtype: object"
+6053,6077,19.545656259560356,"248    Rainer Kees
+Name: name, dtype: object","248    Venedigergruppe
+Name: region, dtype: object"
+3043,3041,19.079651402094356,"519    Hochmoos Ferner
+Name: name, dtype: object","519    Stubaier_Alpen
+Name: region, dtype: object"
+3042,3041,17.084571303263672,"518    Grabawand Ferner
+Name: name, dtype: object","518    Stubaier_Alpen
+Name: region, dtype: object"
+7022,7023,12.569998642390953,"734    Gepatsch Ferner
+Name: name, dtype: object","734    Oetztaler_Alpen
+Name: region, dtype: object"
+9024,9023,12.361606707942082,"90    Rauchkofel Kees M
+Name: name, dtype: object","90    Zillertaler_Alpen
+Name: region, dtype: object"
+5072,5071,11.628437811910988,"400    Schwarzköpfl Kees
+Name: name, dtype: object","400    Glocknergruppe
+Name: region, dtype: object"
+14014,2136,10.442604589047637,"758    Taschach Ferner E
+Name: name, dtype: object","758    Oetztaler_Alpen
+Name: region, dtype: object"
+5123,6077,10.049434098204173,"201    Untersulzbach Kees
+Name: name, dtype: object","201    Venedigergruppe
+Name: region, dtype: object"

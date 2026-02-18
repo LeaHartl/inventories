@@ -60,6 +60,12 @@ GI1.rename(columns={'area': 'area_GI1'}, inplace=True)
 # load GI_LIA files:
 GILIA = hlp.getGI(fls_GILIA, -4)
 
+# GILIA.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GILIA.geojson')
+# GI1.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI1.geojson')
+# GI2.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI2.geojson')
+# GI3.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI3.geojson')
+# GI5.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI5.geojson')
+
 # get the intermediate inventories and return as one gdf:
 subregs = hlp.subregions(GI5)
 
@@ -167,7 +173,7 @@ hlpplots.figsfromcsv(outfolder)
 
 ## run function to get buffer uncertainty - this writes a table to file.
 ## produces "out/buffertable.csv", SLOW!!
-hlp.get_bufferUnc(GI5)
+#hlp.get_bufferUnc(GI5)
 
 
 ## make boxplots and category table - table currently used in Appendix. Contains area stats 
