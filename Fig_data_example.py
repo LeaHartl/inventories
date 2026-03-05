@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -92,21 +91,37 @@ AnkGI5 = AnkGI5.to_crs(src1.crs)
 
 im1 = im.get_images()[1]
 # fig.subplots_adjust(bottom=0.02)
-cax = fig.add_axes([0.91, 0.12, 0.02, 0.32])
+cax = fig.add_axes([0.91, 0.2, 0.015, 0.2])
 cbar = fig.colorbar(im1, cax=cax, orientation='vertical')
 cbar.set_label('Elevation change [m]')
 
 
 ax[0].add_artist(ScaleBar(dx=1, location="lower left", font_properties={"size": 12}))
 
+for a in [ax[0], ax[1], ax[2]]:
+    AnkGI3.boundary.plot(ax=a, color='red', linestyle='--', linewidth=0.5, label='AGI 3')
+    AnkGI5.boundary.plot(ax=a, color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
+
+# AnkGI3.boundary.plot(ax=ax[0], color='red', linestyle='--', linewidth=0.5, label='AGI 3')
+# AnkGI5.boundary.plot(ax=ax[0], color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
+AnkGI3.boundary.plot(ax=ax[3], color='k', linestyle='--', linewidth=0.5, label='AGI 3')
+AnkGI5.boundary.plot(ax=ax[3], color='k', linestyle='-', linewidth=0.5, label='AGI 5')
+
+ax[0].legend(loc='upper center', ncol=2)
+ax[3].legend(loc='upper center', ncol=2)
+
 for a in [ax[0], ax[1], ax[2], ax[3]]:
     a.set_xlim(bounds[0], 449980)#bounds[2])
-    a.set_ylim(bounds[1], bounds[3])
-    a.set_xticks([447000, 448000, 449000])#, 450000])
-    a.set_yticks([209000, 209500, 210000, 210500])
+    a.set_ylim(bounds[1], 210480)#bounds[3])
+    # a.set_xticks([447000, 448000, 449000])#, 450000])
+    # a.set_yticks([209000, 209500, 210000, 210500])
 
-    AnkGI3.boundary.plot(ax=a, color='k', linestyle='--', linewidth=0.5, label='AGI 3')
-    AnkGI5.boundary.plot(ax=a, color='k', linestyle='-', linewidth=0.5, label='AGI 5')
+    a.set_xticks([447500, 448500, 449500])#, 450000])
+    a.set_yticks([209000, 210000])#, 210500])
+    a.tick_params(axis='y', labelrotation=90)
+
+
+    # a.legend(loc='upper center', ncol=2)
 
 for a in [ax[1], ax[3]]:
     # a.set_xticks([])
@@ -124,7 +139,7 @@ ax[1].set_title('Hillshade 2023')
 ax[3].set_title('DoD 2023-2010')
 ax[2].set_title('Orthophoto 2022')
 
-ax[2].legend(loc='upper center')
+
 
 ax[0].annotate("a",
          xy=(0.05, 0.92), xycoords='axes fraction', fontsize=14,
@@ -147,18 +162,20 @@ ax[3].annotate("d",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
 
-fig.subplots_adjust(wspace=0.005, hspace=0.12)
+fig.subplots_adjust(wspace=0.005, hspace=0.01)
 
 # oetz examples
-ortho1 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2015.tif'
-ortho2 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2020.tif'
-ortho3 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2023.tif'
+ortho0 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2009_L.tif'
+ortho1 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2015_L.tif'
+ortho2 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2020_L.tif'
+ortho3 ='/Users/leahartl/Desktop/inventare_2025/Data/oetz_example/example2023_L.tif'
 
-ax00 = ax[2].inset_axes([-0.01, -1.1, 0.72, 1])
-ax01 = ax[2].inset_axes([0.72, -1.1, 0.72, 1])
-ax02 = ax[2].inset_axes([1.45, -1.1, 0.72, 1])
+ax00 = ax[2].inset_axes([0.0, -1.2, 1, 1])
+ax01 = ax[2].inset_axes([1.02, -1.2, 1, 1])
+ax02 = ax[2].inset_axes([0.0, -2.2, 1, 1])
+ax03 = ax[2].inset_axes([1.02, -2.2, 1, 1])
 
-for a_ins, o in zip([ax00, ax01, ax02], [ortho1, ortho2, ortho3]):
+for a_ins, o in zip([ax00, ax01, ax02, ax03], [ortho0, ortho1, ortho2, ortho3]):
     with rio.open(o) as src_1:
         s = src_1.read()
         show(s, transform=src_1.transform, ax=a_ins)
@@ -167,26 +184,31 @@ for a_ins, o in zip([ax00, ax01, ax02], [ortho1, ortho2, ortho3]):
 
     a_ins.set_xlim(bounds0[0], bounds0[2])
     a_ins.set_ylim(bounds0[1], bounds0[3])
-    a_ins.set_xticks([218200, 218600, 219000])
-    a_ins.tick_params(axis='x', labelrotation=90)
+    # a_ins.set_xticks([218200, 218600, 219000])
+    #a_ins.tick_params(axis='x', labelrotation=90)
+
     oetzGI3 = oetzGI3.to_crs(src_1.crs)
     oetzGI5 = oetzGI5.to_crs(src_1.crs)
-    oetzGI3.boundary.plot(ax=a_ins, color='k', linestyle='--', linewidth=0.5, label='AGI 3')
-    oetzGI5.boundary.plot(ax=a_ins, color='k', linestyle='-', linewidth=0.5, label='AGI 5')
+    oetzGI3.boundary.plot(ax=a_ins, color='red', linestyle='--', linewidth=0.5, label='AGI 3')
+    oetzGI5.boundary.plot(ax=a_ins, color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
 
 
 ax00.add_artist(ScaleBar(dx=1, location="lower right", font_properties={"size": 12}))
 
-for a in [ax01, ax02]:
+for a in [ax01, ax03]:
     # a.set_xticks([])
     # a.set_yticks([])
     # a.set_xticklabels('')
     a.set_yticklabels('')
-# for a in [ax[0], ax[1]]:
+for a in [ax00, ax01]:
 #     # a.set_xticks([])
 #     # a.set_yticks([])
 #     # a.set_xticklabels('')
-#     a.set_xticklabels('')
+    a.set_xticklabels('')
+for a in [ax00, ax01, ax02, ax03]:
+    a.set_xticks([47000, 47500, 48000])
+    a.set_yticks([184000, 184400])
+    a.tick_params(axis='y', labelrotation=90)
 
 ax00.annotate("e",
          xy=(0.05, 0.88), xycoords='axes fraction', fontsize=14,
@@ -203,9 +225,15 @@ ax02.annotate("g",
          ha="center", va="center",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
-ax00.set_title('N. Schalf Ferner, 2015')
-ax01.set_title('2020')
-ax02.set_title('2023')
+ax03.annotate("h",
+         xy=(0.05, 0.88), xycoords='axes fraction', fontsize=14,
+         ha="center", va="center",
+         bbox=dict(boxstyle="square,pad=0.2",
+         fc="silver", ec="k", lw=2))
+ax00.set_title('N. Schalf Ferner, 2009')
+ax01.set_title('2015')
+ax02.set_title('2020')
+ax03.set_title('2023')
 
 
 fig.savefig('figures/data_example.png', bbox_inches='tight', dpi=200)

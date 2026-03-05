@@ -72,18 +72,18 @@ def figsfromcsv(outfolder):
 
     m = {'Oetztaler_Alpen': 'Ötztal Alps', 'Venedigergruppe': 'Venediger Group', 'Zillertaler_Alpen': 'Zillertal Alps',
          'Stubaier_Alpen': 'Stubai Alps', 'Glocknergruppe': 'Glockner Group', 'Ankogel_Hochalmspitzgruppe': 'Ankogel Group', 
-         'Silvrettagruppe': 'Silvretta', 'Sonnblickgruppe': 'Sonnblick', 'Granatspitzgruppe': 'Granatspitz Group',
-          'Salzburger_Kalkalpen': 'Salzburg Limestone Alps', 'Raetikon': 'Rätikon', 'Defreggergruppe': 'Defregger Group',
+         'Silvrettagruppe': 'Silvretta', 'Sonnblickgruppe': 'Goldberg Group', 'Granatspitzgruppe': 'Granatspitz Group',
+          'Salzburger_Kalkalpen': 'Hochkönig Group', 'Raetikon': 'Rätikon', 'Defreggergruppe': 'Deferegger Group',
           'Lechtaler_Alpen': 'Lechtaler Alps', 'Karnische_Alpen': 'Carnic Alps', 'Allgaeuer_Alpen': 'Allgäu Alps',
           'Schobergruppe': 'Schober Group', 'Samnaungruppe': 'Samnaun Group', 'Silvretta': 'Silvretta Group', 
-          'Verwallgruppe': 'Verwall Group'}
+          'Verwallgruppe': 'Verwall Group', 'Rieserfernergruppe': 'Rieserferner Group'}
 
     for val, key in m.items():
         mrg.index = mrg.index.str.replace(val, key, regex=True)
 
     
     mrg = mrg.sort_values(by='Lon')
-    mrg['offset_z'] = [40, 40, 40, -390, -300, 40, 80, 40, 40, 40, -480, 40, 40, 40, -390, -300, 40, -640, 40, 40]
+    mrg['offset_z'] = [40, 40, 40, -360, -300, 40, 80, 40, 40, 40, -480, 40, 40, 40, -390, -300, 40, -540, 40, 40]
     mrg['offset_x'] = [0, 0, 0.01, -0.05, 0.11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     print(mrg)
     max_allowed=0
@@ -330,19 +330,17 @@ def loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
     fig = plt.figure(figsize=(12, 10), layout="constrained")
     gs = GridSpec(3, 3, figure=fig)
     ax = fig.add_subplot(gs[0:2, :])
+    print(df_prc)
+    print(df_abs.sum())
 
 
-    m = {'Oetztaler_Alpen': 'Ötztal Alps', 'Venedigergruppe': 'Venediger Group', 'Zillertaler_Alpen': 'Zillertal Alps',
-         'Stubai_Alps': 'Stubai Alps', 'Glocknergruppe': 'Glockner Group', 'Ankogel_Hochalmspitzgruppe': 'Ankogel Group', 
-         'Silvrettagruppe': 'Silvretta', 'Sonnblickgruppe': 'Sonnblick', 'Granatspitzgruppe': 'Granatspitzg Group',
-          'Salzburger_Kalkalpen': 'Salzburg Limestone Alps', 'Raetikon': 'Rätikon'}
 
     df_prc.index = ['Ötztal Alps','Venediger Group','Zillertal Alps','Stubai Alps', 'Glockner Group', 
-            'Ankogel Group', 'Silvretta', 'Sonnblick','Granatspitz Group', 'Dachstein',
-            'Salzburg Limestone Alps', 'Rätikon']
+            'Ankogel Group', 'Silvretta', 'Goldberg Group','Granatspitz Group', 'Dachstein',
+            'Hochkönig', 'Rätikon']
     df_abs.index = ['Ötztal Alps','Venediger Group','Zillertal Alps','Stubai Alps', 'Glockner Group', 
-            'Ankogel Group', 'Silvretta Group', 'Sonnblick Group','Granatspitz Group', 'Dachstein',
-            'Salzburg Limestone Alps', 'Rätikon']
+            'Ankogel Group', 'Silvretta Group', 'Goldberg Group','Granatspitz Group', 'Dachstein',
+            'Hochkönig', 'Rätikon']
 
     # set with as 7 for AGI LIA and AGI1, AGI2: 2002-1996; AGI3: 2012-2004
     # widths = [5, 5, 6, 8, 3]
@@ -396,20 +394,20 @@ def loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
     ax3 = fig.add_subplot(gs[-1, 2])
     
     ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
-    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI1-GI2, n='+str(len(GI1GI2['id'].unique())))
+    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI1-AGI2,\nn='+str(len(GI1GI2['id'].unique())))
 
     ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
-    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI2-GI3, n='+str(len(GI2GI3['id'].unique())))
+    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI2-AGI3, n='+str(len(GI2GI3['id'].unique())))
 
     toplot = all_mrg.loc[~all_mrg['loss_rate'].isnull()]
     ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
-    ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='GI3-GI5, n='+str(len(toplot['id'].unique())))
+    ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI3-AGI5, n='+str(len(toplot['id'].unique())))
     
     ax1.set_ylabel('Nr. of glaciers', fontsize=12)
 
     subset = all_mrg.loc[~all_mrg['r1'].isnull()]
 
-    ax1.legend()
+    ax1.legend(loc='upper left')
     ax2.legend()
     ax3.legend()
 
@@ -434,7 +432,7 @@ def loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
             fontsize=12, verticalalignment='top', #fontfamily='serif',
             bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
 
-    ax1.legend(loc='upper right', bbox_to_anchor=(0.95, 0.8))
+    # ax1.legend(loc='upper right', bbox_to_anchor=(0.95, 0.8))
 
 
     # add if needed: 

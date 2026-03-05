@@ -27,3 +27,14 @@
 # compare_oetztal.py		
 - compare two alternative sets of outlines for a subset of the Ötztal Alps (mapped with local knowledge and without)	
 - produces some statistics (output to csv) and makes a figure	
+
+
+# Fig_data_example.py 	
+- makes a figure showing examples of different data types	
+
+
+# Fig_RR_example.py 	
+- makes a figure showing Round Robin outlines of Seekarles Ferner	
+
+# Fig_Skiresorts.py 	
+- makes a figure showing examples of glacier coverings in ski resorts  	

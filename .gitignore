@@ -7,3 +7,6 @@ figs/
 **/__pycache__/
 GI_consistency_checks.py
 GI_consistency_checks_icedivides.py
+Fig_data_example_v1.py
+Fig_Vernagt.py
+.gitignore

@@ -43,6 +43,12 @@ fls_vanished = glob.glob(folder_new+'**_vanished_glaciers_GI3outline.geojson')
 # load GI5 files:
 GI5 = hlp.getGI(fls_new, -18)
 GI5['area'] = GI5.geometry.area
+# GI5.to_file('out/GI5.gpkg')
+# GI5_large = GI5.sort_values(by='area', ascending=False).head(10)
+# print('largest 10, sum:',GI5_large['area'].sum()*1e-6)
+# print('total, sum:',GI5['area'].sum()*1e-6)
+# print('fraction:', GI5_large['area'].sum()/GI5['area'].sum())
+
 
 # load GI3 files:
 GI3 = hlp.getGI(fls_GI3, -18)
@@ -145,21 +151,21 @@ GI1GI2, GI2GI3, all_mrg = hlp.lossrates(GI_merge, subregs, GILIA, GI1, GI2, GI3,
 demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
 demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
 
-print('getting elevation data - study region')
+# print('getting elevation data - study region')
 # get area that has disappeared:
 GI3m = GI3.dissolve()
 GI5m = GI5.dissolve()
 arealost = GI3m.overlay(GI5m, how='difference')
 # produces 'df_area_elevation.csv'
-hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
+# hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
 # get hypsometry per region 
 print('getting elevation data - regional')
 # produces 'regions_medianElevation.csv'
-hlp.getHypsRegions(demFn, GI5)
+# hlp.getHypsRegions(demFn, GI5)
 
 # make figure showing stacked area since LIA and historgrams of change rates:
 # 'figures/loss_stacked_1850_panelsBARS.png'    
-hlpplots.loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs)
+# hlpplots.loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs)
 # make composite figure showing violin plots of glacier area and median elevation in 
 # gi3, 5 and for the vanishing glaciers & bars of change rates per size class & scatter of change rates & vanishing glaciers
 # 'figures/glacierwise_overview'   
@@ -170,10 +176,9 @@ hlpplots.rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers)
 outfolder = '/Users/leahartl/Desktop/inventare_2025/processing/out/'
 hlpplots.figsfromcsv(outfolder)
 
-
 ## run function to get buffer uncertainty - this writes a table to file.
 ## produces "out/buffertable.csv", SLOW!!
-#hlp.get_bufferUnc(GI5)
+hlp.get_bufferUnc(GI5)
 
 
 ## make boxplots and category table - table currently used in Appendix. Contains area stats 
@@ -193,8 +198,10 @@ hlpplots.piecharts_3(GI5)
 
 
 # print some information:
-print('crevs and >0.01: ', GI5.loc[(GI5['area']>=0.01) & (GI5['crevs']==1)].shape)
-print('crevs and >0.01, tot area: ', GI5.loc[(GI5['area']>=0.01) & (GI5['crevs']==1), 'area'].sum()*1e-6)
+GI5['area_km'] = GI5['area']*1e-6
+print('>0.01: ', GI5.loc[GI5['area_km']>=0.01].shape)
+print('crevs and >0.01: ', GI5.loc[(GI5['area_km']>=0.01) & (GI5['crevs']==1)].shape)
+print('crevs and >0.01, tot area: ', GI5.loc[(GI5['area_km']>=0.01) & (GI5['crevs']==1), 'area'].sum()*1e-6)
 
 print('GI5 unc sum', GI_merge['unc_abs_GI5'].sum()*1e-6)
 print('GI5 ar sum', GI_merge['area_GI5'].sum()*1e-6)

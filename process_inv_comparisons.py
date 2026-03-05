@@ -82,6 +82,8 @@ print(GI5.region.unique())
 wYGI2 = hlp.arWeightYear(GI2)
 wYGI3 = hlp.arWeightYear(GI3)
 wYGI5 = hlp.arWeightYear(GI5)
+print(wYGI3, wYGI5)
+stop
 
 GI4 = gpd.read_file('/Users/leahartl/Desktop/svenja/GI_4_2015/GI_4_2015.shp')
 GI4 = GI4.to_crs(GI5.crs)
@@ -134,14 +136,13 @@ sommer3 = sommer.loc[sommer.invNr==3]
 sommer1.to_file('/Users/leahartl/Desktop/inventare_2025/Data/glims/sommer1.gpkg')
 sommer2.to_file('/Users/leahartl/Desktop/inventare_2025/Data/glims/sommer2.gpkg')
 sommer3.to_file('/Users/leahartl/Desktop/inventare_2025/Data/glims/sommer3.gpkg')
-print(sommer3.sort_values(by='area_km'))
-print(sommer1.sort_values(by='area_km'))
+# print(sommer3.sort_values(by='area_km'))
+# print(sommer1.sort_values(by='area_km'))
 
-print(sommer1.year.min(), sommer1.year.max())
-print(sommer2.year.min(), sommer2.year.max())
-print(sommer3.year.min(), sommer3.year.max())
+# print(sommer1.year.min(), sommer1.year.max())
+# print(sommer2.year.min(), sommer2.year.max())
+# print(sommer3.year.min(), sommer3.year.max())
 
-stop
 
 inv_gabi_AT = intersect_w_states(inv_gabi, austria)
 inv_gabi_AT['area'] = inv_gabi_AT.geometry.area
@@ -230,15 +231,15 @@ wYS3 = hlp.arWeightYear(sommer3)
 
 df_som = pd.DataFrame(columns=[wYS1, wYS2, wYS3], index=['area', 'unc'])
 df_som.loc['area', wYS1] = sommer1['area'].sum()*1e-6
-df_som.loc['unc', wYS1] = 0#sommer1['unc_abs'].sum()*1e-6
+df_som.loc['unc', wYS1] = (sommer1['area']*0.03).sum()*1e-6
 df_som.loc['n', wYS1] = len(sommer1['glac_id'].unique())
 
 df_som.loc['area', wYS2] = sommer2['area'].sum()*1e-6
-df_som.loc['unc', wYS2] = 0#sommer2['unc_abs'].sum()*1e-6
+df_som.loc['unc', wYS2] = (sommer2['area']*0.03).sum()*1e-6
 df_som.loc['n', wYS2] = len(sommer2['glac_id'].unique())
 
 df_som.loc['area', wYS3] = sommer3['area'].sum()*1e-6
-df_som.loc['unc', wYS3] = 0#sommer3['unc_abs'].sum()*1e-6
+df_som.loc['unc', wYS3] = (sommer3['area']*0.03).sum()*1e-6
 df_som.loc['n', wYS3] = len(sommer3['glac_id'].unique())
 df_som = df_som.T
 print('sommer: ', df_som)

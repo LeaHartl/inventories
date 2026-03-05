@@ -45,8 +45,8 @@ def getGI(fls, strnr):
     GI = pd.concat(GIlist, ignore_index=True)
 
     # add lat lon centroids
-    GI['x'] = GI.centroid.to_crs(epsg=4236).x
-    GI['y'] = GI.centroid.to_crs(epsg=4236).y
+    GI['x'] = GI.centroid.to_crs(epsg=4326).x
+    GI['y'] = GI.centroid.to_crs(epsg=4326).y
 
     # sort by region
     GI.sort_values(by='region')
@@ -95,6 +95,8 @@ def subregions(GI5):
     VBG17 = gpd.read_file(VBGfolder+'outlines2017.shp')
     VBG17.to_crs(GI5.crs, inplace=True)
     VBG17['area_mid'] = VBG17.geometry.area
+    # print(VBG17[['name', 'id', 'region' ]])
+    # VBG17.loc[VBG17.region=='Silvretta'].to_crs(epsg=31254).to_file('/Users/leahartl/Desktop/inventare_2025/GI_Salzburg_Bertolotti_2018/Gl_silv_V_2017/Gl_silv_V_2017.shp')
     
     # merge all subregions:
     allregs = pd.concat([salzb, stb, otz, silvT, VBG17])
@@ -329,7 +331,19 @@ def makeTable(grouped, GI_merge, GI3, GI5):
     fortable['losskm_str'] = fortable['loss_km'].astype(str)+'±'+fortable['unc_change'].astype(str)
 
 
-    fortable['total2', 'losskm_str'] = fortable.loc['total2','loss_km'].astype(str)+'±'+total['unc_change'].astype(str)
+    fortable.loc['total2', 'losskm_str'] = fortable.loc['total2','loss_km'].astype(str)+'±'+total['unc_change'].astype(str)
+
+    # fix region names
+    m = {'Oetztaler_Alpen': 'Ötztal Alps', 'Venedigergruppe': 'Venediger Group', 'Zillertaler_Alpen': 'Zillertal Alps',
+         'Stubaier_Alpen': 'Stubai Alps', 'Glocknergruppe': 'Glockner Group', 'Ankogel_Hochalmspitzgruppe': 'Ankogel Group', 
+         'Silvrettagruppe': 'Silvretta', 'Goldberggruppe': 'Goldberg Group', 'Granatspitzgruppe': 'Granatspitz Group',
+          'Hochkoenig': 'Hochkönig Group', 'Raetikon': 'Rätikon', 'Defreggergruppe': 'Deferegger Group',
+          'Lechtaler_Alpen': 'Lechtaler Alps', 'Karnische_Alpen': 'Carnic Alps', 'Allgaeuer_Alpen': 'Allgäu Alps',
+          'Schobergruppe': 'Schober Group', 'Samnaungruppe': 'Samnaun Group', 'Silvretta': 'Silvretta Group', 
+          'Verwallgruppe': 'Verwall Group', 'Rieserfernergruppe': 'Rieserferner Group'}
+
+    for val, key in m.items():
+        fortable.index = fortable.index.str.replace(val, key, regex=True)
 
     # keep only required columns:
     fortable = fortable[['arkm_str', 'perc_of_total', 'losskm_str', 'perc_loss', 'loss_rate', 'count_glaciers', 'lostglaciers', 'yearsGI3', 'yearsGI5']]
@@ -337,7 +351,14 @@ def makeTable(grouped, GI_merge, GI3, GI5):
     print('uniqueID GI5', len(GI5['id'].unique()))
     print('uniqueID GI3', len(GI3['id'].unique()))
 
+
+
     fortable.to_csv('out/summary_area_changesGI3GI5.csv')
+    fortable.to_latex('out/summary_area_changesGI3GI5.tex',#index=False,
+                  #formatters={"name": str.upper},
+                  #float_format="{:.1f}".format,
+                  )
+    # ltx.to_file('out/summary_area_changesGI3GI5.csv')
 
 
 # print values area and number of glaciers per year of data coverage
@@ -486,12 +507,14 @@ def lossrates(GI_merge, allregs, GILIA, GI1, GI2, GI3, GI5, goneglaciers):
     dfRates.T[['median', 'medianKM', 'sumKM', 'countpos', 'countAll']].to_csv('out/rates_T.csv')
 
     # to check positive change rates, also write those to output tables    
-    GI2GI3.loc[GI2GI3['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI2GI3.csv')
-    GI1GI2.loc[GI1GI2['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI1GI2.csv')
-    GI3GI5.loc[GI3GI5['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI3GI5.csv')
-    MidGI5.loc[(MidGI5['rate']>0) & (MidGI5['region_GI5']=='Oetztaler_Alpen')].to_csv('out/pos/poschange_otz_2017_2023.csv')
-    GI2GI3.loc[GI2GI3['rate']>0].sort_values(by='rate', ascending=False).to_file('out/pos/poschange_GI2GI3.geojson')
-    GI1GI2.loc[GI1GI2['rate']>0].sort_values(by='rate', ascending=False).to_file('out/pos/poschange_GI1GI2.geojson')
+    GI2GI3[['id', 'name', 'rate']].loc[GI2GI3['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI2GI3.csv')
+    GI1GI2[['id', 'name', 'rate']].loc[GI1GI2['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI1GI2.csv')
+    GI3GI5[['id', 'name_GI5', 'rate']].loc[GI3GI5['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI3GI5.csv')
+    GI3Mid[['id', 'name_GI5', 'rate']].loc[GI3Mid['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_GI3Mid.csv')
+    MidGI5[['id', 'name_GI5', 'rate']].loc[MidGI5['rate']>0].sort_values(by='rate', ascending=False).to_csv('out/pos/poschange_MidGI5.csv')
+    MidGI5[['id', 'name_GI5', 'rate', 'region_GI5']].loc[(MidGI5['rate']>0) & (MidGI5['region_GI5']=='Oetztaler_Alpen')].to_csv('out/pos/poschange_otz_2017_2023.csv')
+    # GI2GI3.loc[GI2GI3['rate']>0].sort_values(by='rate', ascending=False).to_file('out/pos/poschange_GI2GI3.geojson')
+    # GI1GI2.loc[GI1GI2['rate']>0].sort_values(by='rate', ascending=False).to_file('out/pos/poschange_GI1GI2.geojson')
     #GI3GI5.loc[GI3GI5['rate']>0].sort_values(by='rate', ascending=False).to_file('out/pos/poschange_GI3GI5.geojson')
     #MidGI5.loc[(MidGI5['rate']>0) & (MidGI5['region_GI5']=='Oetztaler_Alpen')].to_file('out/pos/poschange_otz_2017_2023.geojson')
 
@@ -604,6 +627,7 @@ def fig_box(GI5):
     forTab['perc_totalAR'] = forTab['perc_totalAR'].astype(float).round(decimals=2)
 
     forTab.to_csv('out/table_categories.csv')
+    forTab.to_latex('out/table_categories.tex')
 
     print(GI5[['id', 'name', 'region', 'analyst', 'area_km', 'img_qf']].loc[GI5.img_qf==3])
     vanishing.to_file('out/vanishing_qf3.geojson')
@@ -731,8 +755,8 @@ def getHypsRegions(dem, GI5):
         clippedg5[clippedg5 < 0] = np.nan
         dfReg.loc[r, 'medianElev'] = np.nanmedian(clippedg5)
         dfReg.loc[r, 'Areakm'] = g5.geometry.area.sum()*1e-6
-        dfReg.loc[r, 'Lat'] = g5.geometry.centroid.to_crs(epsg=4236).y.values[0]
-        dfReg.loc[r, 'Lon'] = g5.geometry.centroid.to_crs(epsg=4236).x.values[0]
+        dfReg.loc[r, 'Lat'] = g5.geometry.centroid.to_crs(epsg=4326).y.values[0]
+        dfReg.loc[r, 'Lon'] = g5.geometry.centroid.to_crs(epsg=4326).x.values[0]
 
     dfReg.to_csv('out/regions_medianElevation.csv')
 
