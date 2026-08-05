@@ -183,12 +183,14 @@ def forMappingExp(GI3, GI5):
     examplesGI5 = examplesGI5.sort_values(by='area_GI5_km2')
     examplesGI5.index = examplesGI5['id']
     examplesGI5.drop(columns=['id'], inplace=True)
+    # print(examplesGI5['area_GI5_km2'])
+    # stop
 
     examplesGI3 = GI3.loc[GI3['id'].isin(idsGI3)]
     examplesGI3['area_GI3_km2'] = examplesGI3['area']*1e-6
     examplesGI3 = examplesGI3.sort_values(by='area_GI3_km2')
-    examplesGI3.index = examplesGI3['id']
-    examplesGI3.drop(columns=['min_elev', 'median_elev', 'mean_elev', 'max_elev', 'id', 'index'], inplace=True)
+    #examplesGI3.index = examplesGI3['id']
+    #examplesGI3.drop(columns=['min_elev', 'median_elev', 'mean_elev', 'max_elev', 'id', 'index'], inplace=True)
 
     examplesGI3.to_file('out/examples_RR_GI3.geojson')
     examplesGI5.to_file('out/examples_RR_GI5.geojson')
@@ -201,7 +203,7 @@ def add_reluncertainties(ol, arcol):
     # currently not using exploded version!
     ol['area_unc_r'] = np.nan
     ol['area'] = ol[arcol]
-    ol.loc[ol.area > 1e6, 'area_unc_r'] = 0.015
+    ol.loc[ol.area >= 1e6, 'area_unc_r'] = 0.015
     ol.loc[(ol.area < 1e6) & (ol.area >= 0.1e6), 'area_unc_r'] = 0.05
     ol.loc[(ol.area < 0.1e6) & (ol.area >= 0.05e6), 'area_unc_r'] = 0.10
     ol.loc[(ol.area < 0.05e6), 'area_unc_r'] = 0.25

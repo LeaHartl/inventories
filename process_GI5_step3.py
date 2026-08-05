@@ -66,6 +66,9 @@ GI1.rename(columns={'area': 'area_GI1'}, inplace=True)
 # load GI_LIA files:
 GILIA = hlp.getGI(fls_GILIA, -4)
 
+# hlp.forMappingExp(GI3, GI5)
+
+
 # GILIA.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GILIA.geojson')
 # GI1.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI1.geojson')
 # GI2.to_file('/Users/leahartl/Desktop/inventare_2025/Data/GI2.geojson')
@@ -120,30 +123,33 @@ GI_merge['unc_change'] = GI_merge['unc_abs_GI5'] + GI_merge['unc_abs_GI3']
 # get GI3 to GI5 loss rates (area change as percentage of GI3 area, per year)
 GI_merge['loss_rate'] = 100*((GI_merge['area_GI5'] - GI_merge['area_GI3'])/(GI_merge['year_GI5'].astype(int)-GI_merge['year_GI3'].astype(int)))/GI_merge['area_GI3']
 
-# group data by region
-grouped = hlp.prepareTable(GI_merge, GI3, GI5, goneglaciers)
+# # group data by region
+# grouped = hlp.prepareTable(GI_merge, GI3, GI5, goneglaciers)
 
-# make some output tables:
-# reformat the grouped dataframe for an output csv table:
-# "out/summary_area_changesGI3GI5.csv"
-hlp.makeTable(grouped, GI_merge, GI3, GI5)
+# # make some output tables:
+# # reformat the grouped dataframe for an output csv table:
+# # "out/summary_area_changesGI3GI5.csv"
+# hlp.makeTable(grouped, GI_merge, GI3, GI5)
 
-# get area and number of glaciers per year of data coverage, write to file
-# get area and number of glaciers per data type, write to file
-# "out/data_years.csv"
-# "out/datatype_area_count.csv"
-hlp.datayears(GI5)
+# # get area and number of glaciers per year of data coverage, write to file
+# # get area and number of glaciers per data type, write to file
+# # "out/data_years.csv"
+# # "out/datatype_area_count.csv"
+# hlp.datayears(GI5)
 
 
-# prepare data frame for stacked area/bar charts. Area since LIA
+# # prepare data frame for stacked area/bar charts. Area since LIA
 df_prc, df_abs = hlp.sinceLIA(GILIA, GI1, GI2, GI3, GI5)
 
 # compute loss rates across the GI and write to output tables. Also find lost glaciers GI1GI2
 # and GI2GI3 and export tables with positive change rates
 # 'out/rates_T.csv', 'out/rates_1.csv', lost glaciers GI1GI2, lost glaciers GI2GI3, various tables for >0 change
 GI1GI2, GI2GI3, all_mrg = hlp.lossrates(GI_merge, subregs, GILIA, GI1, GI2, GI3, GI5, goneglaciers)
-
-
+# # print(all_mrg.head())
+# # print(all_mrg.columns)
+# # export for easier use in some of the plots
+# # all_mrg.to_csv('out/merged_GI3GI5.csv')
+# # stop
 
 #######  OUTPUT #######
 # get hypsometry all regions, save to csv
@@ -151,17 +157,24 @@ GI1GI2, GI2GI3, all_mrg = hlp.lossrates(GI_merge, subregs, GILIA, GI1, GI2, GI3,
 demFn = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_at_clipped.tif'
 demAspect = '/Users/leahartl/Desktop/inventare_2025/DEM_BEV/ogd_10m_Aspect.tif'
 
-# print('getting elevation data - study region')
-# get area that has disappeared:
-GI3m = GI3.dissolve()
-GI5m = GI5.dissolve()
-arealost = GI3m.overlay(GI5m, how='difference')
-# produces 'df_area_elevation.csv'
-# hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
-# get hypsometry per region 
-print('getting elevation data - regional')
-# produces 'regions_medianElevation.csv'
+# # print('getting elevation data - study region')
+# # get area that has disappeared:
+# GI3m = GI3.dissolve()
+# GI5m = GI5.dissolve()
+# #arealost = GI3m.overlay(GI5m, how='difference')
+# # produces 'df_area_elevation.csv'
+# # hlp.getHyps(demFn, '', GI3, GI5, arealost, 'elevation')
+# # get hypsometry per region 
+# print('getting elevation data - regional')
+# # produces 'regions_medianElevation.csv'
 # hlp.getHypsRegions(demFn, GI5)
+
+# combined figure for revision (vanishing glaciers and loss rates)
+hlpplots.van_glaciers_panels(GI1GI2, GI2GI3, all_mrg, goneglaciers)
+# hlpplots.loss_stacked_BARS_sup(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs)
+plt.show()
+stop
+
 
 # make figure showing stacked area since LIA and historgrams of change rates:
 # 'figures/loss_stacked_1850_panelsBARS.png'    
@@ -173,25 +186,26 @@ hlpplots.rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers)
 
 ## requires the following csv files to be present in "outfolder"
 ## 'summary_area_changesGI3GI5.csv', 'df_area_elevation.csv', 'regions_medianElevation.csv'
-outfolder = '/Users/leahartl/Desktop/inventare_2025/processing/out/'
-hlpplots.figsfromcsv(outfolder)
-
-## run function to get buffer uncertainty - this writes a table to file.
-## produces "out/buffertable.csv", SLOW!!
-hlp.get_bufferUnc(GI5)
+# outfolder = '/Users/leahartl/Desktop/inventare_2025/processing/out/'
+# hlpplots.figsfromcsv(outfolder)
 
 
-## make boxplots and category table - table currently used in Appendix. Contains area stats 
-## for Outline Quality and other categorical flags
-## also writes some ROGI comparison stats to table.
-hlp.fig_box(GI5)
+# ## run function to get buffer uncertainty - this writes a table to file.
+# ## produces "out/buffertable.csv", SLOW!!
+# hlp.get_bufferUnc(GI5)
+
+
+# ## make boxplots and category table - table currently used in Appendix. Contains area stats 
+# ## for Outline Quality and other categorical flags
+# ## also writes some ROGI comparison stats to table.
+# hlp.fig_box(GI5)
 
 ## make figure for paper: Piecharts with log scale scatter plot of AGI5 glaciers
-hlpplots.piecharts(GI5)
+# hlpplots.piecharts(GI5)
 
 # make pie chart plots for appendix:
-hlpplots.piecharts_2(GI5)
-hlpplots.piecharts_3(GI5)
+# hlpplots.piecharts_2(GI5)
+# hlpplots.piecharts_3(GI5)
 
 # not needed
 # hlpplots.fig_hist(GI5)

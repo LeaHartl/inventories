@@ -19,15 +19,19 @@ from shapely.geometry import box
 from matplotlib_scalebar.scalebar import ScaleBar
 # get the files:
 # folder:
-fldr = '/Users/leahartl/Desktop/inventare_2025/roundrobin/Upload_outlines_v1/'
-# get all file paths in folder:
-fls = glob.glob(fldr+'*.geojson')
+# fldr = '/Users/leahartl/Desktop/inventare_2025/roundrobin/Upload_outlines_v1/'
+# # get all file paths in folder:
+# fls = glob.glob(fldr+'*.geojson')
 
-
+# ortho 2023 soelden: 
+# solden = '/Users/leahartl/Desktop/inventare_2025/Data/soelden_tif2023_Large.tif'
+solden = '/Users/leahartl/Desktop/inventare_2025/Data/soeldenOrtho2023/merged_exp.tif'#'/Users/leahartl/Desktop/inventare_2025/Data/soeldenOrtho2023/merged_1m.tif'
+solden_sml = '/Users/leahartl/Desktop/inventare_2025/Data/soeldenOrtho2023/merged_exp_sml.tif'
 # ortho Wurtenkees:
-SK_L = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_Large.tif'
-SK_N = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_sml_N.tif'
-SK_S = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_sml_S.tif'
+wurt = '/Users/leahartl/Desktop/inventare_2025/roundrobin/Orthophotos/Wurtenkees/UAV Orthophotos 2023/OF_WUK_2023_10_v1_25cm.tif'
+# SK_L = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_Large.tif'
+# SK_N = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_sml_N.tif'
+# SK_S = '/Users/leahartl/Desktop/inventare_2025/Data/seekarlesF_sml_S.tif'
 
 def getbox(bounds, refcrs):
     box1 = box(bounds[0], bounds[1], bounds[2], bounds[3])
@@ -40,62 +44,62 @@ def getbox(bounds, refcrs):
     return (geodf)
 
 
-# get files from folder
-def getdata(fls):
-    df = pd.DataFrame(columns=['id', 'name', ])
-    # for f in fls:
-    df['fn'] = fls
+# # get files from folder
+# def getdata(fls):
+#     df = pd.DataFrame(columns=['id', 'name', ])
+#     # for f in fls:
+#     df['fn'] = fls
 
-    gdfs = []
-    for f in fls:
-        f_list = f.split('/')
-        df.loc[df.fn == f, 'who'] = f_list[-1][0:-19]
-        # df.loc[df.fn == f, 'id'] = f_list[1].split('/')[1]
-        # df.loc[df.fn == f, 'glID'] = f_list[2]
-        # df.loc[df.fn == f, 'year'] = f_list[3]
+#     gdfs = []
+#     for f in fls:
+#         f_list = f.split('/')
+#         df.loc[df.fn == f, 'who'] = f_list[-1][0:-19]
+#         # df.loc[df.fn == f, 'id'] = f_list[1].split('/')[1]
+#         # df.loc[df.fn == f, 'glID'] = f_list[2]
+#         # df.loc[df.fn == f, 'year'] = f_list[3]
 
-        dat = gpd.read_file(f)
-        # print(dat.crs)
-        dat = dat.to_crs(epsg=31287)
-        print(dat.head())
-        if 'Id' in dat.columns:
-            dat.rename(columns={'Id':'id'}, inplace=True)
-        if 'name' not in dat.columns:
-            dat['name'] = ''
+#         dat = gpd.read_file(f)
+#         # print(dat.crs)
+#         dat = dat.to_crs(epsg=31287)
+#         print(dat.head())
+#         if 'Id' in dat.columns:
+#             dat.rename(columns={'Id':'id'}, inplace=True)
+#         if 'name' not in dat.columns:
+#             dat['name'] = ''
 
-        dat.geometry = dat.geometry.make_valid()
+#         dat.geometry = dat.geometry.make_valid()
 
-        dat = circles(dat)
+#         dat = circles(dat)
 
-        dat['area'] = dat.geometry.area
-        dat.loc[dat['iscircle'] == 'yes', 'area'] = 0
-        dat['who'] = f_list[-1][0:-19]
-        # dat = dat.dissolve(by='id')
+#         dat['area'] = dat.geometry.area
+#         dat.loc[dat['iscircle'] == 'yes', 'area'] = 0
+#         dat['who'] = f_list[-1][0:-19]
+#         # dat = dat.dissolve(by='id')
 
-        gdfs.append(dat)
+#         gdfs.append(dat)
 
-        print(dat)
+#         print(dat)
 
     
-    gdf = pd.concat(gdfs)
-    # print(gdf)
-    # stop
+#     gdf = pd.concat(gdfs)
+#     # print(gdf)
+#     # stop
 
 
-    return(gdf)
+#     return(gdf)
 
 # gdf = getdata(fls)
 
 # print(gdf)
 
 
-def plts(orthoW, orthoSoldL, orthoSoldS):
+def plts(orthoW, orthoS, orthoS_sml):
     fig, ax = plt.subplots(2, 1, figsize=(7,7))#, sharex=True)
     ax = ax.flatten()
-    wurt = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/mergedfiles/split_vanishing/Sonnblickgruppe_GI5_proc2.geojson')
+    wurt = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/mergedfiles/split_vanishing/Goldberggruppe_GI5_proc2.geojson')
     
     otz = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/mergedfiles/split_vanishing/Oetztaler_Alpen_GI5_proc2.geojson')
-    
+    otz = otz.to_crs(epsg=31254)
 
     # fig, ax = plt.subplot_mosaic([['a', 'b'], ['c', 'd']], figsize=(9, 6), layout='constrained')
     # fig, ax = plt.subplots(1, 1, layout='constrained', figsize=(10, 7))
@@ -103,6 +107,7 @@ def plts(orthoW, orthoSoldL, orthoSoldS):
     # wurt
     with rio.open(orthoW) as src1:
         s = src1.read()
+        print(s.shape)
         wurt = wurt.to_crs(src1.crs)
         print(src1.crs)
         show(s, transform=src1.transform, ax=ax[0])
@@ -116,6 +121,8 @@ def plts(orthoW, orthoSoldL, orthoSoldS):
     
     ax[0].set_xlim(425356, 426289)
     ax[0].set_ylim(210342, 211181)
+    ax[0].set_yticks(np.arange(210400, 211200, 200))
+    # ax[0].set_xticks(210400, 211200, 200)
 
     # ax[0].set_xlim(425887, 426262)
     # ax[0].set_ylim(210605, 211000)
@@ -133,35 +140,46 @@ def plts(orthoW, orthoSoldL, orthoSoldS):
 
     ax_ins1 = ax[1].inset_axes([1.08, -0.1, 1.2, 1.2])
 
-    with rio.open(sold_L) as src2:
-        s = src2.read()
+    with rio.open(orthoS) as src2:
+
+        show(src2, ax=ax[1], transform=src2.transform)
+        print(src2.crs)
+        print(src2.bounds)
         otz = otz.to_crs(src2.crs)
-        print(src1.crs)
-        show(s, transform=src2.transform, ax=ax[1])
         bounds2 = src2.bounds
 
-    with rio.open(sold_S) as src3:
+    with rio.open(orthoS_sml) as src3:
         s = src3.read()
         otz = otz.to_crs(src3.crs)
         show(s, transform=src3.transform, ax=ax_ins1)
         bounds3 = src3.bounds
 
     otz.boundary.plot(ax=ax[1], color='cyan')
-    otz.boundary.plot(ax=ax_ins1, color='cyan')
+    otz.boundary.plot(ax=ax_ins1, color='cyan', label='AGI5 (2023)')
 
-    ax[1].set_ylim(bounds2[1], bounds2[3])
-    ax[1].set_xlim(bounds2[0], 218100)#481)
+    # ax_ins1.set_ylim(bounds3[1], bounds3[3])
+    # ax_ins1.set_xlim(bounds3[0], bounds3[2])#218100)#481)
+    ax_ins1.set_ylim(bounds3[1], bounds3[3])
+    ax_ins1.set_xlim(45600, bounds3[2])#218100)#481)
 
-    ax_ins1.set_ylim(338005, 338800)
-    ax_ins1.set_xlim(217005, 218070)
-
-    # box2 = getbox([338005, 217005, 338800, 218070], otz.crs)
-    box2 = getbox([217005, 338005, 218070, 338800], otz.crs)
-    # box = box.to_crs(wurt.crs)
-    box2.boundary.plot(ax=ax[1], color='red')
+    ax[1].set_ylim(197200, 200000)
+    ax[1].set_xlim(44000, 47000)#218100)#481)
+    ax[1].set_yticks(np.arange(198000, 201000, 1000))
+    ax[1].set_xticks(np.arange(44000, 48000, 1000))
 
 
-    for a in [ax[0], ax_ins0, ax[1], ax_ins1]:
+    # ax_ins1.set_ylim(338005, 338800)
+    # ax_ins1.set_xlim(217005, 218070)
+    box1 = getbox(bounds3, otz.crs)
+    box1.boundary.plot(ax=ax[1], color='red')
+   
+
+    # ax_ins0.set_xticks([])
+    # ax_ins0.set_yticks([])
+    # ax_ins0.set_xticklabels('')
+    # ax_ins0.set_yticklabels('')
+
+    for a in [ax_ins0, ax_ins1]:
         a.set_xticks([])
         a.set_yticks([])
         a.set_xticklabels('')
@@ -170,6 +188,7 @@ def plts(orthoW, orthoSoldL, orthoSoldS):
     # ax[0].indicate_inset_zoom(ax_ins0, edgecolor="black")
     ax[1].add_artist(ScaleBar(dx=1, location="lower left", font_properties={"size": 14}))
     ax_ins1.add_artist(ScaleBar(dx=1, location="lower right", font_properties={"size": 14}))
+    ax_ins1.legend(loc='upper right', bbox_to_anchor=(0.8, 1.2))
 
     
     ax[0].annotate("a",
@@ -198,6 +217,6 @@ def plts(orthoW, orthoSoldL, orthoSoldS):
     plt.show()
 
 
-plts(wurt, sold_L, sold_S)
+plts(wurt, solden, solden_sml)
 
     

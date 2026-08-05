@@ -47,6 +47,18 @@ AnkGI3 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/GI/GI_3_new/Ankog
 oetzGI5 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/mergedfiles/split_vanishing/Oetztaler_Alpen_GI5_proc2.geojson')
 oetzGI3 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/GI/GI_3_new/Oetztaler_Alpen_elevation.geojson')
 
+Nschalf = oetzGI5.loc[oetzGI5['id'] == 2106]
+GEK = AnkGI5.loc[AnkGI5['id'] == 21014]
+
+# print(Nschalf.geometry.centroid.to_crs(epsg=4326))
+# print(GEK.geometry.centroid.to_crs(epsg=4326))
+# stop
+# print(AnkGI3)
+# print(AnkGI5)
+
+# print(oetzGI3)
+# print(oetzGI5)
+# stop
 
 fig, ax = plt.subplots(2, 2, figsize=(10, 7))
 ax = ax.flatten()
@@ -89,6 +101,8 @@ with rio.open(ortho) as src1:
 AnkGI3 = AnkGI3.to_crs(src1.crs)
 AnkGI5 = AnkGI5.to_crs(src1.crs)
 
+
+
 im1 = im.get_images()[1]
 # fig.subplots_adjust(bottom=0.02)
 cax = fig.add_axes([0.91, 0.2, 0.015, 0.2])
@@ -99,16 +113,33 @@ cbar.set_label('Elevation change [m]')
 ax[0].add_artist(ScaleBar(dx=1, location="lower left", font_properties={"size": 12}))
 
 for a in [ax[0], ax[1], ax[2]]:
-    AnkGI3.boundary.plot(ax=a, color='red', linestyle='--', linewidth=0.5, label='AGI 3')
-    AnkGI5.boundary.plot(ax=a, color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
+    AnkGI3.boundary.plot(ax=a, color='dodgerblue', linestyle='-', linewidth=1, label='AGI3, 2009')
+    AnkGI5.boundary.plot(ax=a, color='gold', linestyle='-', linewidth=1, label='AGI5, 2023')
 
 # AnkGI3.boundary.plot(ax=ax[0], color='red', linestyle='--', linewidth=0.5, label='AGI 3')
 # AnkGI5.boundary.plot(ax=ax[0], color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
-AnkGI3.boundary.plot(ax=ax[3], color='k', linestyle='--', linewidth=0.5, label='AGI 3')
-AnkGI5.boundary.plot(ax=ax[3], color='k', linestyle='-', linewidth=0.5, label='AGI 5')
+AnkGI3.boundary.plot(ax=ax[3], color='dodgerblue', linestyle='-', linewidth=1, label='AGI3, 2009')
+AnkGI5.boundary.plot(ax=ax[3], color='gold', linestyle='-', linewidth=1, label='AGI5, 2023')
 
-ax[0].legend(loc='upper center', ncol=2)
-ax[3].legend(loc='upper center', ncol=2)
+# handles, labels = ax[2].get_legend_handles_labels()
+AGI3 = Line2D([0], [0], color='dodgerblue', lw=1)
+AGI5 = Line2D([0], [0], color='gold', lw=1)
+handles = [AGI3, AGI5]
+labels = ['AGI3, 2009', 'AGI5, 2023']
+# Dummy handle for the "title"
+title_handle = Line2D([], [], linestyle='none')
+
+ax[2].legend(
+    [title_handle] + handles,
+    [r"$\bf{Großelend\ Kees}$"] + labels,
+    ncol=3,              # 1 title + 3 entries
+    loc="upper left",
+    # handlelength=0,
+    # handletextpad=0.0,
+    columnspacing=1.2,
+    bbox_to_anchor=(0.1, 1.26))
+# ax[2].legend(title= 'Großelend Kees', loc='upper left', ncol=3)
+# ax[3].legend(loc='upper center', ncol=2)
 
 for a in [ax[0], ax[1], ax[2], ax[3]]:
     a.set_xlim(bounds[0], 449980)#bounds[2])
@@ -152,7 +183,7 @@ ax[1].annotate("b",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
 ax[2].annotate("c",
-         xy=(0.05, 0.88), xycoords='axes fraction', fontsize=14,
+         xy=(0.05, 0.08), xycoords='axes fraction', fontsize=14,
          ha="center", va="center",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
@@ -189,8 +220,8 @@ for a_ins, o in zip([ax00, ax01, ax02, ax03], [ortho0, ortho1, ortho2, ortho3]):
 
     oetzGI3 = oetzGI3.to_crs(src_1.crs)
     oetzGI5 = oetzGI5.to_crs(src_1.crs)
-    oetzGI3.boundary.plot(ax=a_ins, color='red', linestyle='--', linewidth=0.5, label='AGI 3')
-    oetzGI5.boundary.plot(ax=a_ins, color='magenta', linestyle='-', linewidth=0.5, label='AGI 5')
+    oetzGI3.boundary.plot(ax=a_ins, color='dodgerblue', linestyle='-', linewidth=1, label='AGI3, 2006')
+    oetzGI5.boundary.plot(ax=a_ins, color='gold', linestyle='-', linewidth=1, label='AGI5, 2023')
 
 
 ax00.add_artist(ScaleBar(dx=1, location="lower right", font_properties={"size": 12}))
@@ -230,10 +261,27 @@ ax03.annotate("h",
          ha="center", va="center",
          bbox=dict(boxstyle="square,pad=0.2",
          fc="silver", ec="k", lw=2))
-ax00.set_title('N. Schalf Ferner, 2009')
-ax01.set_title('2015')
-ax02.set_title('2020')
-ax03.set_title('2023')
+
+# handles2, labels2 = ax02.get_legend_handles_labels()
+# Dummy handle for the "title"
+dummy1 = Line2D([], [], linestyle='none', marker=None)
+
+labels2 = ['AGI3, 2006', 'AGI5, 2023']
+
+ax02.legend(
+    [title_handle] + handles,
+    [r"$\bf{N.\ Schalf\ Ferner}$"] + labels2,
+    ncol=3,              # 1 title + 3 entries
+    loc='lower right', bbox_to_anchor=(1.24, -0.3),
+    # handlelength=0,
+    # handletextpad=0.0,
+    columnspacing=1.2,)
+# ax02.legend(title='N. Schalf Ferner', loc='lower right', ncol=3, bbox_to_anchor=(0.8, -0.3))
+
+ax00.set_title('N. Schalf Ferner, orthophoto 2009')
+ax01.set_title('Orthophoto 2015')
+ax02.set_title('Orthophoto 2020')
+ax03.set_title('Orthophoto 2023')
 
 
 fig.savefig('figures/data_example.png', bbox_inches='tight', dpi=200)

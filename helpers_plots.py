@@ -1,17 +1,24 @@
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.gridspec import GridSpec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
+from matplotlib.ticker import MultipleLocator
+import matplotlib.cm as cm
+from matplotlib.ticker import FuncFormatter
+
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 import seaborn as sns
 import rasterio
 import rioxarray as rxr
 import glob
 import matplotlib.colors as mcolors
-
+import contextily as cx
 
 class MidpointNormalize(mcolors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -33,14 +40,25 @@ def figsfromcsv(outfolder):
     dfReg = pd.read_csv(outfolder+'regions_medianElevation.csv', index_col=0)
     dfReg['prc'] = 100*dfReg['Areakm']/dfReg['Areakm'].sum()
 
-    fig = plt.figure(figsize=(12, 7))
-    gs = GridSpec(2, 4, wspace=0.3)# left=0.05, right=0.48, wspace=0.05)
+    fig = plt.figure(figsize=(14, 7))
+    # gs = GridSpec(2, 4, wspace=0.3)# left=0.05, right=0.48, wspace=0.05)
+    gs = GridSpec(2, 4,
+    width_ratios=[1.3, 1, 1, 1],  # Make the first column 30% wider
+    wspace=0.3
+    )
     ax0 = fig.add_subplot(gs[:, 0])
+    
 
     ax0.step(10*10*df_area_elevation['GI3']*1e-6, df_area_elevation.index, label='AGI3', color='grey')
     ax0.step(10*10*df_area_elevation['GI5']*1e-6, df_area_elevation.index, label='AGI5', color='k')
 
     ax0.set_ylabel('Elevation [m.a.s.l.]', fontsize=12)
+    ax0.yaxis.set_major_locator(MultipleLocator(250))
+    ax0.yaxis.set_minor_locator(MultipleLocator(125))
+
+    ax0.xaxis.set_major_locator(MultipleLocator(10))
+    ax0.xaxis.set_minor_locator(MultipleLocator(5))
+
     ax0.set_xlabel('Glacier area [km$^2$]', fontsize=12)
     ax0.legend(loc='lower right')
     ax0.set_ylim(1800, 3750)
@@ -55,19 +73,16 @@ def figsfromcsv(outfolder):
     ax0lost.legend(loc='upper right')
 
 
-
-
-
     summtab['ar'] = summtab['arkm_str'].str.split('±').str[0].astype(float)
     names = [0.2, 0.5, 0.7, 0.9, 1.1, 1.3, 2.8]
     bns = [0, 1, 5, 15, 30, 45, 60, 200]
     summtab['sizeBin'] = pd.cut(summtab['ar'], bins=bns, labels=names, include_lowest=True)
 
-    print(summtab)
+    # print(summtab)
     mrg = pd.merge(summtab[['ar', 'perc_of_total', 'loss_rate', 'perc_loss', 'sizeBin']], dfReg[['medianElev', 'Lon']], left_index=True, right_index=True)
     
 
-    print(mrg)
+    # print(mrg)
 
 
     m = {'Oetztaler_Alpen': 'Ötztal Alps', 'Venedigergruppe': 'Venediger Group', 'Zillertaler_Alpen': 'Zillertal Alps',
@@ -85,18 +100,32 @@ def figsfromcsv(outfolder):
     mrg = mrg.sort_values(by='Lon')
     mrg['offset_z'] = [40, 40, 40, -360, -300, 40, 80, 40, 40, 40, -480, 40, 40, 40, -390, -300, 40, -540, 40, 40]
     mrg['offset_x'] = [0, 0, 0.01, -0.05, 0.11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    print(mrg)
+    # print(mrg)
+    # continuous color scale
     max_allowed=0
     min_allowed=-90
-    norm = plt.Normalize(min_allowed, max_allowed)#MidpointNormalize( midpoint =0, vmin=-90, vmax=30)
-    palette = plt.cm.get_cmap("Reds_r").copy()
-    palette.set_over('grey', 1)
-    cmap = 'Reds_r'
+    # norm = plt.Normalize(min_allowed, max_allowed)#MidpointNormalize( midpoint =0, vmin=-90, vmax=30)
+    # palette = plt.cm.get_cmap("Reds_r").copy()
+    # palette.set_over('grey', 1)
+    
+    # ciscrete intervals
+    bounds = np.arange(-90, 10, 10)   # [-90, -80, ..., -10, 0]
+
+    palette = plt.cm.get_cmap("YlOrRd_r", len(bounds)-1).copy()
+    palette.set_over('grey')
+    norm = colors.BoundaryNorm(bounds, palette.N)
+
+    # cmap = 'Reds_r'
+    # cmap = 'autumn'
+    # print(cmap)
+    # stop
+
     # f, a = plt.subplots(1, 1, figsize=(10, 4))
 
     a = fig.add_subplot(gs[:, 1:])
-    m = a.scatter(mrg.Lon, mrg.medianElev, s=200*mrg['sizeBin'].astype(float), c=mrg['perc_loss'], edgecolor='darkgrey', cmap=palette, vmin=min_allowed, vmax=max_allowed)#cmap=cmap, norm=norm, )
-    cb = fig.colorbar(m, extend='max')
+    m = a.scatter(mrg.Lon, mrg.medianElev, s=200*mrg['sizeBin'].astype(float), c=mrg['perc_loss'], edgecolor='darkgrey', cmap=palette, norm=norm)#vmin=min_allowed, vmax=max_allowed)#cmap=cmap, norm=norm, )
+    # cb = fig.colorbar(m, extend='max')
+    cb = fig.colorbar(m,boundaries=bounds,ticks=bounds,spacing='proportional',extend='max')
     cb.set_label('Area change [% of AGI3 area]', fontsize=12)
     # a.set_ylim(2200, 3200)
     a.set_ylim(1800, 3750)
@@ -315,6 +344,283 @@ def figsfromcsv(outfolder):
 
 #     # plt.show()
 #     fig.savefig('figures/loss_stacked_1850_panels.png', dpi=200, bbox_inches='tight')
+
+def van_glaciers_panels(GI1GI2, GI2GI3, all_mrg, goneglaciers):
+
+    fig = plt.figure(figsize=(10, 8), layout="constrained")
+    gs = GridSpec(3, 3, figure=fig)
+    ax = fig.add_subplot(gs[0:2, :])
+
+    # lims = [110000, 410000, 300000, 410000]
+    # ax.set_xlim(lims[0], lims[1])
+    # ax.set_ylim(lims[2], lims[3])
+    # # ax.set_yticks([46.5, 47, 47.5, 48])
+    lims = [9.8, 13.4, 46.4, 48.0]
+    ax.set_xlim(lims[0], lims[1])
+    ax.set_ylim(lims[2], lims[3])
+    ax.set_yticks([46.5, 47, 47.5, 48])
+
+
+
+    van1 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/processing/out/GI1GI2lost_centroids.geojson')
+    van2 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/processing/out/GI2GI3lost_centroids.geojson')
+    van3 = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/processing/out/vanishing_glaciers.geojson')
+    regionen = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/Data/[EXT]_AW__Vektorfile_Regionen/BG-Regionen-OSM.shp')
+
+    label_pos = []
+
+    # eps = 31287
+    eps = 4326
+
+  
+
+
+    van1.to_crs(epsg=eps, inplace=True)
+    van1['clr'] = 'yellow'
+    van1 = van1.rename(columns={'area_GI1':'area_old'})
+    # van1.plot(ax=ax, color='brown', markersize=40, edgecolor='lightgrey', zorder=100)
+
+    van2.to_crs(epsg=eps, inplace=True)
+    van2['clr'] = 'orange'
+    van2 = van2.rename(columns={'area_GI2':'area_old'})
+    # van2.plot(ax=ax, color='red', markersize=40, edgecolor='lightgrey', zorder=100)
+
+    van3.to_crs(epsg=eps, inplace=True)
+    van3['clr'] = 'red'
+    van3 = van3.rename(columns={'area_GI3':'area_old'})
+    # van3.plot(ax=ax, color='magenta', markersize=40, edgecolor='lightgrey', zorder=100)
+
+    vanall = pd.concat([van1, van2, van3])
+
+    # set bins and circle sizes for all panels: 
+    # bins = [0, 0.01, 0.05, 0.1, 0.5]
+    bins = [0, 0.01, 0.1, 0.5]
+    # Marker sizes corresponding to each bin
+    # marker_sizes = [10, 30, 80, 150]
+    marker_sizes = [10, 50, 150]
+    # Assign each glacier to a bin
+    # bin_idx = np.digitize(GI5.area_km, bins) - 1
+
+    bin_idx = np.digitize(vanall.area_old*1e-6, bins) - 1
+    sizes = np.array(marker_sizes)[bin_idx]
+
+    # at = gpd.read_file('/Users/leahartl/Dropbox/IGF_WIP/AGM2026/at.json')
+    # at = at.to_crs(eps)
+    # at.boundary.plot(ax=ax, color='k', linewidth=1)
+    at = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/Data/VGD_Oesterreich_gen_250_20260402/VGD_250_generalisiert.shp')
+    at = at.to_crs(eps)
+    at = at.dissolve('BL')
+    at.boundary.plot(ax=ax, color='k', linewidth=1)
+    print(vanall.head())
+    print(vanall.columns)
+
+
+
+
+    # vanall.geometry.centroid.plot(ax=ax, c=vanall['clr'], s=sizes, edgecolor='lightgrey', zorder=100)
+    ax.scatter(vanall.geometry.centroid.x, vanall.geometry.centroid.y, c=vanall['clr'], s=sizes, edgecolor='k', zorder=100)
+
+   
+    # countries = gpd.read_file('/Users/leahartl/Desktop/WSS/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+    countries = gpd.read_file('/Users/leahartl/Desktop/inventare_2025/Data/swissboundaries3d_2026-01_2056_5728.shp/swissBOUNDARIES3D_1_5_TLM_LANDESGEBIET.shp')
+    countries = countries.to_crs(epsg=eps)
+    countries.boundary.plot(ax=ax, color='k', linewidth=0.5)
+
+    # add basemap image
+    cx.add_basemap(ax,
+                   crs=eps,
+                   # source=cx.providers.BasemapAT.terrain
+                   source=cx.providers.BasemapAT.terrain,
+                   # source=cx.providers.OpenTopoMap
+                   zoom=10#15
+                  )
+
+
+    # patchGone = Line2D([0], [0], marker='o', linestyle='None', label='Vanished glaciers', color='red', markersize=10)
+    patchVan1 = Line2D([0], [0], marker='o', linestyle='None', label='AGI1-AGI2 (5)', color='yellow', markersize=10, markeredgecolor='k')
+    patchVan2 = Line2D([0], [0], marker='o', linestyle='None', label='AGI2-AGI3 (11)', color='orange', markersize=10, markeredgecolor='k')
+    patchVan3 = Line2D([0], [0], marker='o', linestyle='None', label='AGI3-AGI5 (95)', color='red', markersize=10, markeredgecolor='k')
+    hls = [patchVan1, patchVan2, patchVan3]
+    fig.legend(handles=hls, loc='upper center', bbox_to_anchor=(0.5, 0.96), ncol=3, title='Vanishing glaciers')
+
+    # ----- Size legend -----
+    # labels = ["<=0.01",">0.01–0.05",">0.05–0.1",">0.1–0.5"]
+    labels = ["<=0.01",">0.01–0.1",">0.1–0.5"]
+
+    handles = [
+        Line2D(
+            [], [], linestyle='',
+            marker='o',
+            markersize=np.sqrt(s),   # scatter s is area; legend uses diameter
+            markerfacecolor='lightgray',
+            markeredgecolor='k',
+            label=lab
+            )
+        for s, lab in zip(marker_sizes, labels)
+        ]
+
+    ax.legend(handles=handles, title="Glacier size [km²],\nprevious inventory", loc="upper left",frameon=True, bbox_to_anchor=(0.0, 0.995))#
+        # labelspacing=1.2,     # increase vertical distance between labels
+        # handleheight=2.0)      # give large markers more room)
+
+
+    ax.grid('both')
+    ax.set_aspect('equal')
+    ax.set_ylabel('Latitude [°]', fontsize=12)
+    ax.set_xlabel('Longitude [°]', fontsize=12)
+    #fig.savefig('agm/VanishingGlaciers_GI3GI5.png', dpi=200, bbox_inches='tight')
+    
+    ax1 = fig.add_subplot(gs[-1, 0])
+    ax2 = fig.add_subplot(gs[-1, 1])
+    ax3 = fig.add_subplot(gs[-1, 2])
+    
+    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI1-AGI2,\nn='+str(len(GI1GI2['id'].unique())))
+
+    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI2-AGI3, n='+str(len(GI2GI3['id'].unique())))
+
+    toplot = all_mrg.loc[~all_mrg['loss_rate'].isnull()]
+    ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI3-AGI5, n='+str(len(toplot['id'].unique())))
+    
+    # ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    # ax1.hist(GI1GI2['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI1-AGI2,\nn='+str(len(GI1GI2['id'].unique())))
+
+    # # ax2.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    # ax1.hist(GI2GI3['rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI2-AGI3, n='+str(len(GI2GI3['id'].unique())))
+
+    # toplot = all_mrg.loc[~all_mrg['loss_rate'].isnull()]
+    # # ax3.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='stepfilled', color='lightgrey', alpha=0.8)
+    # ax1.hist(toplot['loss_rate'].values, bins=np.arange(-10, 14, 1), histtype='step', color='k', label='AGI3-AGI5, n='+str(len(toplot['id'].unique())))
+    
+
+    ax1.set_ylabel('Nr. of glaciers', fontsize=12)
+
+    subset = all_mrg.loc[~all_mrg['r1'].isnull()]
+
+    ax1.legend(loc='center right', bbox_to_anchor=(0.999, 0.7))
+    ax2.legend()
+    ax3.legend()
+
+    for a in [ax1, ax2, ax3]:
+        a.set_ylim(0, 450)
+        a.set_xlim(-11, 12)
+        a.set_xlabel('Change rate [% $yr^{-1}$]', fontsize=12)
+
+    for a, an in zip([ax, ax1, ax2, ax3], ['a', 'b', 'c', 'd']):
+        a.grid('both')
+        a.tick_params(axis='both', which='major', labelsize=12)
+        if an =='a':
+            a.annotate(an,
+            xy=(0.96, 1), xycoords='axes fraction',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize=12, verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
+        else:
+            a.annotate(an,
+            xy=(0.98, 1), xycoords='axes fraction',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize=12, verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
+
+    # ax1.legend(loc='upper right', bbox_to_anchor=(0.95, 0.8))
+
+
+    fig.savefig('figures/van_glaciers_panels.png', dpi=200, bbox_inches='tight')
+
+
+
+def loss_stacked_BARS_sup(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
+
+    # loss rates - four panels: stacked area since LIA, various versions of glacierwise loss 
+    # Define custom colors 
+    custom_colors = ["k", "grey", "#003f5c","#2f4b7c","#665191","#a05195","#d45087","#f95d6a","#ff7c43","#ffa600", "silver", "darkgrey"]
+
+    df_abs = df_abs.sort_values(by=1850, ascending=False)
+    df_abs = df_abs[[1850, 1969, 1998, 2006, 2023]]
+
+    # stacked area/bar chart:
+    fig = plt.figure(figsize=(8, 6), layout="constrained")
+    gs = GridSpec(1, 1, figure=fig)
+    ax = fig.add_subplot(gs[:, :])
+    print(df_prc)
+    print(df_abs.sum())
+    print(df_abs)
+    df_abs=df_abs.round(decimals=1)#.astype(int)
+    print(df_abs)
+    print(df_abs.to_latex(index=True,
+                  formatters={"name": str.upper},
+                  float_format="{:.1f}".format,
+                  ))
+
+    df_prc.index = ['Ötztal Alps','Venediger Group','Zillertal Alps','Stubai Alps', 'Glockner Group', 
+            'Ankogel Group', 'Silvretta', 'Goldberg Group','Granatspitz Group', 'Dachstein',
+            'Hochkönig', 'Rätikon']
+    df_abs.index = ['Ötztal Alps','Venediger Group','Zillertal Alps','Stubai Alps', 'Glockner Group', 
+            'Ankogel Group', 'Silvretta Group', 'Goldberg Group','Granatspitz Group', 'Dachstein',
+            'Hochkönig', 'Rätikon']
+
+    # set with as 7 for AGI LIA and AGI1, AGI2: 2002-1996; AGI3: 2012-2004
+    # widths = [5, 5, 6, 8, 3]
+    widths = [5, 5, 5, 5, 5]
+    bottom = [0, 0, 0, 0, 0]
+    for i, reg in enumerate(df_abs.index):
+        values = df_abs.loc[reg, :].values
+        p = ax.bar([1850, 1969, 1998, 2006, 2023], values, width = widths, label=reg, bottom=bottom, color=custom_colors[i])
+        bottom += values
+
+    ax.grid('both')
+    ax.set_ylim(0, 950)
+    ax.set_xlim(1845, 2029)
+    # ax.set_xlim(1969, 2025)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.set_xlabel('Year', fontsize=12)
+    # ax.set_ylabel('Percentage of 1850 area [%]', fontsize=12)
+    ax.set_ylabel('Glacier area [km$^2$]', fontsize=12)
+    ax.legend(ncol=2, loc='lower left', bbox_to_anchor=(0.04, 0.01), fontsize=12)
+    # ax.vlines([1850, 1969, 1998, 2006, 2023], 0, 1000, colors='silver')
+    # ax.tick_params(axis='x', which='minor', bottom=False)
+    # ax.tick_params(axis='y', which='minor', bottom=False)
+    ax.minorticks_on()
+
+    ax.annotate('AGI LIA',
+            xy=(1858, 620), xycoords='data',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='white', edgecolor='k', pad=3.0))
+    ax.annotate('AGI1',
+            xy=(1967, 620), xycoords='data',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='white', edgecolor='k', pad=3.0))
+    ax.annotate('AGI2',
+            xy=(1995, 620), xycoords='data',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='white', edgecolor='k', pad=3.0))
+    ax.annotate('AGI3',
+            xy=(2006, 620), xycoords='data',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='white', edgecolor='k', pad=3.0))
+    ax.annotate('AGI5',
+            xy=(2021, 620), xycoords='data',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='white', edgecolor='k', pad=3.0))
+
+ 
+    ax.grid('both')
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    # ax.annotate('a',
+    #         xy=(0.96, 1), xycoords='axes fraction',
+    #         xytext=(-0.8, -0.5), textcoords='offset fontsize',
+    #         fontsize=12, verticalalignment='top', #fontfamily='serif',
+    #         bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
+ 
+ 
+    fig.savefig('figures/loss_stacked_1850_SUP.png', dpi=200, bbox_inches='tight')
 
 
 def loss_stacked_BARS(GI1GI2, GI2GI3, all_mrg, df_prc, df_abs):
@@ -554,51 +860,110 @@ def rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers):
     
 
     arbins = [0, 0.01, 0.1, 0.5, 1, 5, 18]
-    all_mrg['binned'] = pd.cut(all_mrg['area_GI3']*1e-6, arbins)
-    notgone['binned'] = pd.cut(notgone['area_GI3']*1e-6, arbins)
+    arbins2 = [0, 0.01, 0.05, 0.1, 0.5, 1, 5, 18]
+
+    all_mrg['binned'] = pd.cut(all_mrg['area_GI5']*1e-6, arbins)
+    all_mrg['binned2'] = pd.cut(all_mrg['area_GI5']*1e-6, arbins2)
+
+    notgone['binned'] = pd.cut(notgone['area_GI5']*1e-6, arbins)
+
     gone['binned'] = pd.cut(gone['area_GI3']*1e-6, arbins)
 
 
     gb_all = all_mrg[['loss_rate', 'binned']].groupby(['binned']).median()
+    gb_all2 = all_mrg[['loss_rate', 'binned2']].groupby(['binned2']).median()
+
     gb_all_count = all_mrg[['loss_rate', 'binned']].groupby(['binned']).count()
+    gb_all_count2 = all_mrg[['loss_rate', 'binned2']].groupby(['binned2']).count()
 
     gbnotgone = notgone[['loss_rate', 'binned']].groupby(['binned']).median()
     # gbnotgone = notgone[['loss_rate', 'binned']].groupby(['binned']).median()
     gonegb = gone[['loss_rate', 'binned', 'area_GI3', 'median_elev_GI3']].groupby(['binned']).count()
-    print(gb_all)
-    print(gb_all_count)
-    print(gonegb)
+
+    dfout1 = pd.DataFrame(index=gb_all.index, columns=['rate', 'gl_count'])
+    dfout1['rate'] = gb_all.values
+    dfout1['rate'] = dfout1['rate'].round(decimals=2)
+    dfout1['gl_count'] = gb_all_count.values
+
+    dfout2 = pd.DataFrame(index=gb_all2.index, columns=['rate', 'gl_count'])
+    dfout2['rate'] = gb_all2.values
+    dfout2['rate'] = dfout2['rate'].round(decimals=2)
+    dfout2['gl_count'] = gb_all_count2.values
+
+    # print(dfout1)
+    # print(dfout2)
+    # print('gb all', gb_all)
+    # print('gb allcount', gb_all_count)
+    # print('gb allcount2', gb_all_count2)
+    # # print('gb all2', gb_all2)
+
+    dfout1.to_csv('out/changerates_areabins.csv')
+    dfout2.to_csv('out/changerates_areabins_2.csv')
+
+    # print(notgone.columns)
+    # stop
+
+    # print(gb_all_count)
+    # print(gonegb)
 
     ax5.bar([0.9, 1.8, 3, 4, 5, 6], gb_all['loss_rate'].values, color='darkgrey', width=0.4)#gb_all_count['loss_rate']/gb_all_count['loss_rate'].sum())
     
     ax55 = ax5.twinx()
-    ax55.bar([1.1, 2.2, 3.1, 4, 5, 6], gonegb['loss_rate'].values, color='tomato', width=0.2)
+    ax55.bar([1.21, 2.2, 3.1, 4, 5, 6], gonegb['loss_rate'].values, color='tomato', width=0.2)
     
     ax5.set_xticks([1, 2, 3, 4, 5, 6])
-    ax5.set_xticklabels(['<0.01', '0.01 - 0.1', '0.1-0.5', '0.5-1.0', '1.0-5.0', '>5'])
+    # ax5.set_xticklabels(['<0.01', '0.01 - 0.1', '0.1-0.5', '0.5-1.0', '1.0-5.0', '>5'])
+    ax5.set_xticklabels(['<=0.01', '>0.01-0.1', '>0.1-0.5', '>0.5-1.0', '>1-5', '>5'])
 
     ax5.tick_params(axis='both', which='major', labelsize=12)
     ax55.tick_params(axis='both', which='major', labelsize=12)
     ax5.set_xlabel('Glacier area [km$^2$]', fontsize=12)
-    ax5.set_ylabel('Median area\n change rate[% a$^{-1}$]', fontsize=12, color='darkgrey')
+    ax5.set_ylabel('Median area\n change rate[% yr$^{-1}$]', fontsize=12, color='darkgrey')
 
     ax55.set_ylabel('Vanishing\n glaciers [#]', fontsize=12, color='tomato')
     ax55.tick_params(axis='y', colors='tomato')
 
-    # norm = MidpointNormalize( midpoint =0, vmin=-7, vmax=3)
-    # cmap = 'Reds_r'
-    max_allowed = 0
-    min_allowed = -8
-    norm = plt.Normalize(min_allowed, max_allowed)#MidpointNormalize( midpoint =0, vmin=-90, vmax=30)
-    palette = plt.cm.get_cmap("Reds_r").copy()
-    palette.set_over('grey', 1)
-    cmap = 'Reds_r'
+    # continuous scale
+    # max_allowed = 0
+    # min_allowed = -8
+    # norm = plt.Normalize(min_allowed, max_allowed)#MidpointNormalize( midpoint =0, vmin=-90, vmax=30)
+    # palette = plt.cm.get_cmap("Reds_r").copy()
+    # palette.set_over('grey', 1)
+
+
+    # discrete intervals
+    bounds = np.arange(-8, 1, 1)   
+    palette = plt.cm.get_cmap("YlOrRd_r", len(bounds)-1).copy()
+    palette.set_over('grey')
+    norm = colors.BoundaryNorm(bounds, palette.N)
     # ax4.semilogx(all_mrg['area_GI3']*1e-6, all_mrg['median_elev_GI3'], c=all_mrg['loss_rate'].values, s=20, markeredgecolor='grey', linestyle='', cmap=cmap, norm=norm)
 
-    sc = ax4.scatter(notgone['area_GI5']*1e-6, notgone['median_elev_GI3'], c=notgone['loss_rate'].values, s=40, edgecolor='grey', linewidth=0.4, cmap=palette, norm=norm)
+    # original version: median elevation on y axis:
+    # sc = ax4.scatter(notgone['area_GI5']*1e-6, notgone['median_elev_GI3'], c=notgone['loss_rate'].values, s=40, edgecolor='grey', linewidth=0.4, cmap=palette, norm=norm)
+    # ax4.scatter(gone['area_GI3']*1e-6, gone['median_elev_GI3'], c='k', s=140, edgecolor='lightgrey', linewidth=0.6, zorder=200, marker='*', label='vanishing glaciers')
     
-    ax4.scatter(gone['area_GI3']*1e-6, gone['median_elev_GI3'], c='k', s=140, edgecolor='lightgrey', linewidth=0.6, zorder=200, marker='*', label='vanishing glaciers')
+    # revision: 
+    # sc = ax4.scatter(notgone['area_GI5']*1e-6, notgone['loss_rate'], c=notgone['loss_rate'].values, s=40, edgecolor='grey', linewidth=0.4, cmap=palette, norm=norm)
+    # ax4.scatter(gone['area_GI3']*1e-6, gone['loss_rate'], c='k', s=140, edgecolor='lightgrey', linewidth=0.6, zorder=200, marker='*', label='vanishing glaciers')
+    
+    rangeGI5 = notgone['max_elev_GI5'] - notgone['min_elev_GI5']
+    rangeGI3_gone = gone['max_elev_GI3'] - gone['min_elev_GI3']
+    print(rangeGI3_gone.median())
+    print(rangeGI5.median())
+
+    print(rangeGI3_gone.mean())
+    print(rangeGI3_gone.max())
+    stop
+    sc = ax4.scatter(notgone['area_GI5']*1e-6, rangeGI5.values, c=notgone['loss_rate'].values, s=40, edgecolor='grey', linewidth=0.4, cmap=palette, norm=norm)
+    ax4.scatter(gone['area_GI3']*1e-6, rangeGI3_gone.values, c='none', s=140, edgecolor='k', linewidth=0.6, zorder=200, marker='*', alpha=0.4)
+    
+       
+
     ax4.set_xscale('log')
+    # ax4.xaxis.set_major_formatter(ticker.ScalarFormatter())
+    # ax4.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.4f}"))
+    # ax4.xaxis.set_minor_formatter(ticker.NullFormatter())  # optional: hide minor tick labels
+    # ax4.ticklabel_format(style='plain', axis='x')
 
     # fig.subplots_adjust(right=0.8)
     cbar_ax = inset_axes(ax4,
@@ -607,13 +972,53 @@ def rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers):
                     loc='center right',
                     borderpad=-5)
     cb = fig.colorbar(sc, extend='max', pad=0.025, aspect=20, cax=cbar_ax)
-    cb.set_label('Area change rate [% a$^{-1}$]', fontsize=12)
+    cb.set_label('Area change rate [% yr$^{-1}$]', fontsize=12)
     ax4.grid()
-    ax4.legend(loc='lower right')
+    # ax4.legend(loc='lower right')
 
     ax4.tick_params(axis='both', which='major', labelsize=12)
     ax4.set_xlabel('Glacier area [km$^2$]', fontsize=12)
-    ax4.set_ylabel('Median elevation [m]', fontsize=12)
+    ax4.set_ylabel('Elevation range [m]', fontsize=12)
+
+
+    axins = ax4.inset_axes([0.1, 0.53, 0.42, 0.40]) # [left, bottom, width, height]
+    axins.set_xscale('log')
+    axins.scatter(
+    gone['area_GI3'] * 1e-6,
+    rangeGI3_gone.values,
+    s=140,
+    facecolors='none',
+    edgecolors='k',
+    linewidth=0.6,
+    marker='*',
+    zorder=200,
+    label='vanishing glaciers'
+    )
+
+    axins.scatter(
+    notgone['area_GI5'] * 1e-6,
+    rangeGI5.values,
+    c=notgone['loss_rate'].values,
+    s=40,
+    alpha=0.2,
+    edgecolor='grey',
+    linewidth=0.4,
+    cmap=palette,
+    norm=norm,
+    )
+
+    # Zoom region
+    axins.set_xlim(0.0017, 0.2)
+    axins.set_ylim(0, 450)
+    axins.legend()
+
+    # Optional: remove tick labels to keep it clean
+    # axins.tick_params(labelleft=False, labelbottom=False)
+
+    # Draw a box on the parent axes and connect it to the inset
+    mark_inset(ax4, axins, loc1=3, loc2=1, fc="none", ec="0.1", lw=0.8)
+    # ax4.indicate_inset_zoom(axins)
+
 
 
     ax2.annotate(
@@ -641,18 +1046,25 @@ def rates_glacierwise1(GI1GI2, GI2GI3, all_mrg, GI3, GI5, goneglaciers):
             fontsize='medium', verticalalignment='top', #fontfamily='serif',
             bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
 
+    axins.annotate(
+            'e',
+            xy=(0.048, 0.8), xycoords='axes fraction',
+            xytext=(-0.8, -0.5), textcoords='offset fontsize',
+            fontsize='medium', verticalalignment='top', #fontfamily='serif',
+            bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
+
 
     dfStuff = pd.DataFrame(columns=['vanishing', 'GI3', 'GI5'], index=['medianAr', 'sumAr'])
-    print(goneglaciers.head())
-    print(GI3.head())
-    print(GI5.head())
+    # print(goneglaciers.head())
+    # print(GI3.head())
+    # print(GI5.head())
     for subset, col in zip([goneglaciers, GI3, GI5],['vanishing', 'GI3', 'GI5']):
         dfStuff.loc['medianAr', col] = subset.geometry.area.median()*1e-6
         dfStuff.loc['sumAr', col] = subset.geometry.area.sum()*1e-6
         dfStuff.loc['medianEl', col] = subset['median_elev'].median()
         dfStuff.loc['min_MedianEl', col] = subset['median_elev'].min()
         dfStuff.loc['max_MedianEl', col] = subset['median_elev'].max()
-    print(dfStuff)
+    # print(dfStuff)
     dfStuff.to_csv('out/summaryGoneGlaciers_area_elevation.csv')
 
 
@@ -758,6 +1170,9 @@ def piecharts(GI5):
     gb3 = GI5[['area', 'debris']].groupby('debris').sum()#.values
     gb4 = GI5[['area', 'crevs']].groupby('crevs').sum()
 
+    # perc = np.percentile(1e-6*GI5['area'].values, 98)
+    # print(perc)
+    
 
     # size bins
     bins = [0, 0.01, 0.1, 0.5, 1, 5, 20]
@@ -769,7 +1184,11 @@ def piecharts(GI5):
 
     gb5['lables'] = ['<=0.01', '>0.01-0.1', '>0.1-0.5', '>0.5-1.0', '>1-5', '>5']
     gb_count['lables'] = ['<=0.01 km$^2$', '>0.01-0.1 km$^2$', '>0.1-0.5 km$^2$', '>0.5-1.0 km$^2$', '>1-5 km$^2$', '>5 km$^2$']
-    clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    # clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    clrs = ['#000000', '#cc79a7', '#0C7BDC', '#56b3e9', '#f0e142', '#d55c00']
+    #FFC20A'
+    clrsLarge = cm.plasma(np.linspace(0, 0.9, 10))
+
     patches0, texts0, autotexts0 = ax0.pie(gb5['area'], autopct='%1.1f%%',
                                              colors=clrs,#sns.color_palette('Set2'),
                                              explode=[0.13, 0, 0, 0, 0, 0],
@@ -791,6 +1210,7 @@ def piecharts(GI5):
     ax1.set_title('Number of glaciers per size class', y=1.0, pad=+14)
 
 
+
     regBG = GI5[['area', 'region']].groupby('region').sum()
     regBG = regBG.sort_values(by='area', ascending=False)
     # colors = sns.color_palette("pastel6").as_hex()
@@ -799,12 +1219,17 @@ def piecharts(GI5):
         dat = GI5.loc[GI5.region==region]
         asymmetric_error = [(dat['median_elev']-dat['min_elev']).values, (dat['max_elev'] - dat['median_elev']).values]
         marker = 'o'
-        #label=region, #, c=sns.color_palette())
-        ax2.semilogx(dat['area']*1e-6,dat['median_elev'], marker=marker, markersize=4, markeredgecolor='grey', linewidth=0.7, c='k', zorder=50, linestyle='')
-        ax2.errorbar(dat['area']*1e-6,dat['median_elev'], yerr=asymmetric_error, markersize=5, fmt='o', linewidth=0.7, c='grey')
+        # ax2.scatter(dat['area']*1e-6,dat['median_elev'], marker=marker, s=3, edgecolor='grey', linewidth=0.2, c='k', zorder=50)
+        # ax2.errorbar(dat['area']*1e-6,dat['median_elev'], yerr=asymmetric_error, markersize=3, fmt='o', linewidth=0.7, c='grey')
         
-        # ax2.errorbar(dat['area']*1e-6,dat['median_elev'], yerr=asymmetric_error, markersize=5, fmt='o', linewidth=0.7, c='grey')
-        # ax2.scatter(dat['area']*1e-6,dat['median_elev'], marker=marker, s=4, c='k', zorder=50)
+        ax2.semilogx(dat['area']*1e-6,dat['median_elev'], marker=marker, markersize=3, markeredgecolor='grey', linewidth=0.2, c='k', zorder=50, linestyle='')
+        ax2.errorbar(dat['area']*1e-6,dat['median_elev'], yerr=asymmetric_error, markersize=3, fmt='o', linewidth=0.7, c='grey')
+        
+        # rangeGI5 = dat['max_elev'] - dat['min_elev']
+        # ax2.scatter(dat['area']*1e-6, rangeGI5, marker=marker, s=4, c='k', zorder=50)
+
+        # ax2.errorbar(dat['area']*1e-6,dat['median_elev'], yerr=asymmetric_error, markersize=5, fmt='o', linewidth=0.8, c='grey')
+        # ax2.scatter(dat['area']*1e-6,dat['median_elev'], marker=marker, s=3, c='k', zorder=50)
 
     # ax2.set_xlim(-0.01, 15.5)
     ax2.set_xlim(0.0, 15.5)
@@ -812,24 +1237,55 @@ def piecharts(GI5):
 
     largest = GI5.sort_values(by='area', ascending=False).head(10)
     largest = largest.sort_values(by='area', ascending=True)
+    print(largest)
+    # stop
     # print(largest[['id', 'name']])
     largest.loc[largest['id'] == 2125.0, 'name'] = 'Hintereis Ferner'
+    largest.loc[largest['id'] == 14014.0, 'name'] = 'Taschach Ferner East'
 
-    for gl in largest['name'].values:
+    for j, gl in enumerate(largest['name'].values):
         dat = largest.loc[largest['name']==gl]
         asymmetric_error = [(dat['median_elev']-dat['min_elev']).values, (dat['max_elev'] - dat['median_elev']).values]
         ar = (dat['area'].values[0]*1e-6).astype(float).round(decimals=2)#.astype(str)
-        ax2.scatter(dat['area']*1e-6, dat['median_elev'], s=12, label=gl+': '+'{:.2f}'.format(ar)+' km$^2$', zorder=100)
-        ax2.errorbar(dat['area']*1e-6, dat['median_elev'], yerr=asymmetric_error,  markersize=4, fmt='o', linewidth=0.7, zorder=200)
-    
+        
+        ax2.scatter(dat['area']*1e-6, dat['median_elev'], c=clrsLarge[j], s=12, label=gl+': '+'{:.2f}'.format(ar)+' km$^2$ ('+str(dat.year.values[0])+')', zorder=100)
+        ax2.errorbar(dat['area']*1e-6, dat['median_elev'], c=clrsLarge[j], yerr=asymmetric_error,  markersize=4, fmt='o', linewidth=0.7, zorder=200)
+        
+        # rangeGI5 = dat['max_elev'] - dat['min_elev']
+        # ax2.scatter(dat['area']*1e-6, rangeGI5, s=12, label=gl+': '+'{:.2f}'.format(ar)+' km$^2$', zorder=100)
+
     
     ax2.grid('both')
     ax2.tick_params(axis='both', which='major', labelsize=12)
     ax2.set_xlabel('Glacier size [km$^2$]', fontsize=12)  
-    ax2.set_ylabel('Elevation [m a.s.l.]', fontsize=12)    
+    ax2.set_ylabel('Elevation [m a.s.l.]', fontsize=12)
+    #ax2.set_ylabel('Elevation [m a.s.l.]', fontsize=12)
+
+    # Major ticks every 500 m (with labels)
+    ax2.yaxis.set_major_locator(MultipleLocator(500))
+    # Minor ticks every 100 m (no labels)
+    ax2.yaxis.set_minor_locator(MultipleLocator(100))
+
+    # for lin scale:
+    # Optional: make minor ticks a bit shorter
+    # ax2.tick_params(axis='y', which='major', length=6)
+    # ax2.tick_params(axis='y', which='minor', length=3)
+
+    # ax2.xaxis.set_major_locator(MultipleLocator(2))
+    # ax2.xaxis.set_minor_locator(MultipleLocator(1))
+
+    # Optional: make minor ticks a bit shorter
+    # ax2.tick_params(axis='x', which='major', length=6)
+    # ax2.tick_params(axis='x', which='minor', length=3)
+
+    # non-exponential notation for log scale:
+    # ax2.xaxis.set_major_formatter(ticker.ScalarFormatter())
+    # ax2.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.4f}"))
+    # ax4.xaxis.set_minor_formatter(ticker.NullFormatter()) 
+
     ax2.xaxis.tick_top()
     ax2.xaxis.set_label_position('top')
-    ax2.legend(loc='lower right', bbox_to_anchor=(1.04,-0.6), ncol=3, fontsize=10)
+    ax2.legend(loc='lower right', bbox_to_anchor=(1.1,-0.58), ncol=3, fontsize=10)
     # ax3.tick_params(axis='both', which='major', labelsize=12)
 
     ax0.annotate(
@@ -850,7 +1306,7 @@ def piecharts(GI5):
             xytext=(-1.8, 0.5), textcoords='offset fontsize',
             fontsize='medium', verticalalignment='top', #fontfamily='serif',
             bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
-    print(largest)
+    
 
     fig.savefig('figures/GI5_area_pies_log.png', bbox_inches='tight', dpi=200)
 
@@ -878,7 +1334,8 @@ def piecharts_2(GI5):
 
 
     gb1['lables'] = ['good (0)', 'medium (1)', 'poor (2)']
-    clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    # clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    clrs = ['#000000', '#FFC20A', '#0C7BDC', '#56b3e9', '#f0e142', '#d55c00']
 
     patches0, texts0, autotexts0 = ax0.pie(gb1['area'], autopct=make_autopct(gb1['area']),
                                              colors=clrs,#sns.color_palette('Set2'),
@@ -956,7 +1413,7 @@ def piecharts_2(GI5):
             fontsize='medium', verticalalignment='top', #fontfamily='serif',
             bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
 
-    fig.savefig('figures/GI5_QF_pies.png', bbox_inches='tight', dpi=200)
+    fig.savefig('figures/GI5_QF_pies_2.png', bbox_inches='tight', dpi=200)
 
 
 def piecharts_3(GI5):
@@ -979,7 +1436,8 @@ def piecharts_3(GI5):
 
 
     gb1['lables'] = ['no debris (0)', 'partial debris (1)', 'mostly debris (2)', 'full debris (3)', 'unsure (4)']
-    clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    # clrs = ['#44AA99', '#CC6677', '#999933', '#88CCEE', '#AA4499', '#DDCC77']
+    clrs = ['#000000', '#FFC20A', '#0C7BDC', '#56b3e9', '#f0e142', '#d55c00']
 
     patches0, texts0, autotexts0 = ax0.pie(gb1['area'], autopct=make_autopct(gb1['area']),#autopct='%1.1d%%',
                                              colors=clrs,#sns.color_palette('Set2'),
@@ -1058,7 +1516,7 @@ def piecharts_3(GI5):
             fontsize='medium', verticalalignment='top', #fontfamily='serif',
             bbox=dict(facecolor='lightgrey', edgecolor='k', pad=3.0))
 
-    fig.savefig('figures/GI5_DebrisCrevs_pies.png', bbox_inches='tight', dpi=200)
+    fig.savefig('figures/GI5_DebrisCrevs_pies_2.png', bbox_inches='tight', dpi=200)
 
 
 

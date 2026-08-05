@@ -1,8 +1,6 @@
 ## scripts to process AGI files		
 
 
-
-
 # process_GI5_step3.py		
 - imports proc_helper_functions.py and helpers_plots.py
 - loads pre-processed AGI5 files and compiles larger scale stats over all regions
@@ -15,8 +13,6 @@
 
 # helpers_plots.py	
 - functions to make plots
-
-
 
 
 # process_inv_comparisons.py		
@@ -38,3 +34,6 @@
 
 # Fig_Skiresorts.py 	
 - makes a figure showing examples of glacier coverings in ski resorts  	
+
+# additional_plots.py	
+- makes extra figs for revision and loads "digitization uncertainty" outlines. 

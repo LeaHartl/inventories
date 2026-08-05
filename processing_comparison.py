@@ -191,11 +191,13 @@ gdf['area_km'] = gdf['area']*1e-6
 # normal['area_km'] = normal['area']*1e-6
 print(gdf[['id','who','alias', 'clrs', 'iscircle','geometry']])
 print(gdf[['who','alias', 'clrs']].groupby('who').first())
+analysts = gdf[['who','alias', 'clrs']].groupby('who').first().sort_values(by='alias')
+
 # gdf[['who','alias', 'clrs']].groupby('who').first().to_csv('out/RoundRobin_numbers_people_colors.csv')
 
-# stop
 
-def plts(gdf):
+
+def plts(gdf, analysts):
     fig, ax = plt.subplots(2, 3, figsize=(9,6), sharex=True)
 
     gls = ['Madleinf.', 'NN', 'Arventalk.', 'Wurtenk.', 'Seekarlesf.', 'Pasterze']
@@ -205,6 +207,9 @@ def plts(gdf):
     gi3['area_GI3_km'] = gi3.geometry.area*1e-6
 
     ax = ax.flatten()
+
+    for a, c in zip(analysts.alias.values, analysts.clrs.values):
+        ax[2].scatter([], [], c=c, label=a, edgecolor='k', linewidth=0.2)
     
     gdf = gdf.sort_values(by='area_km')
     lst = []
@@ -218,7 +223,6 @@ def plts(gdf):
         if n == 'Wurtenkees + Toteis':
             n = 'Wurten Kees'
 
-        print(n)
 
         subset = gdf.loc[gdf.index==gl, 'area_km'].values
         # add extra 0 area for Madlein Ferner because JC did not put a polygon in his file but did categorize this as a vanished glacier.
@@ -229,26 +233,80 @@ def plts(gdf):
         gls.append(gl)
 
         parts = ax[i].violinplot(subset, showextrema=False)
-        ax[i].set_xticklabels('')
-        #ax[i].scatter(np.ones(len(subset)), subset1['area_km'], c=subset1['clrs'], edgecolor='k')
-        for a in subset1['alias'].sort_values():
-            ax[i].scatter(1, subset1.loc[subset1['alias']==a, 'area_km'], c=subset1.loc[subset1['alias']==a,'clrs'], edgecolor='k', label=a)
-            
-       
-        # ax[i].set_title(n+' ('+str(int(gl))+' , n:' + str(len(subset))+')')
-        ax[i].set_title(n+', n:' + str(len(subset)))
-
-        if gl == 6013:
-            ax[i].hlines(gi3Sub['area_GI3_km2'], 0.8, 1.2, colors='k', label='AGI3 area', linestyle='--')
-
         for pc in parts['bodies']:
             pc.set_facecolor('lightgrey')
 
-    # bplot = ax.boxplot(lst,
-    #                        tick_labels=gls)
+        # q1, med, q3 = np.percentile(subset, [25, 50, 75])
+
+        # # Box
+        # ax[i].add_patch(
+        # plt.Rectangle((0.94, q1), 0.12, q3 - q1,
+        #           facecolor='none', edgecolor='black', zorder=2)
+        # )
+        # Median line
+        # ax[i].plot([0.94, 1.06], [med, med], color='grey', lw=1, zorder=6)
+
+        ax[i].boxplot(
+        subset,
+        positions=[1],
+        widths=0.15,
+        # notch=True,
+        patch_artist=True,
+        showfliers=False,
+        boxprops=dict(
+            facecolor='none',      # transparent
+            edgecolor='black',
+            linewidth=1,
+            zorder=2
+        ),
+        medianprops=dict(color='grey', linewidth=1, zorder=2),
+        whiskerprops=dict(color='black', zorder=2),
+        capprops=dict(color='black', zorder=2)
+        )
+       
+        for a in subset1['alias'].sort_values():
+            ax[i].scatter(1, subset1.loc[subset1['alias']==a, 'area_km'], c=subset1.loc[subset1['alias']==a,'clrs'], edgecolor='k', zorder=100)#label=a,
+           
+        ax[i].set_title(n+', n:' + str(len(subset)))
+
+        if gl == 6013:
+            ax[i].hlines(gi3Sub['area_GI3_km2'], 0.8, 1.2, colors='k', label='AGI3', linestyle='--')
+
+
+
+    # reshuffle the legend for reviewer comment.
+    handles, labels = ax[2].get_legend_handles_labels()
+    print(handles, labels)
+
+    # analysts
+    # stop
+    ncol = 9
+    n = len(handles)
+    nrows = int(np.ceil(n / ncol))
+
+    # Reorder so the displayed legend reads row-wise
+    order = []
+    for c in range(ncol):
+        for r in range(nrows):
+            idx = r * ncol + c
+            if idx < n:
+                order.append(idx)
+
+    handles = [handles[i] for i in order]
+    labels = [labels[i] for i in order]
+
+    ax[2].legend(
+        handles,
+        labels,
+        ncol=ncol,
+        loc='upper left',
+        bbox_to_anchor=(-2.6, 1.5),
+        title='Analysts:'
+    )
+    # ax[2].legend(loc='upper left', title='Analysts:', ncol=8, bbox_to_anchor=(-2.5, 1.5))
 
     ax[0].set_ylabel('Area [km$^2$]')
-    ax[2].legend(loc='upper left', title='Analysts:', ncol=8, bbox_to_anchor=(-2.5, 1.5))
+    
     ax[3].set_ylabel('Area [km$^2$]')
     ax[1].set_yticks([0, 0.01, 0.02])
     ax[4].set_yticks([0.75, 0.80, 0.85])
@@ -256,17 +314,19 @@ def plts(gdf):
     # ax.set_ylim(0, 1.5)
     # plt.tight_layout()
     for a, an in zip(ax, ['a', 'b', 'c', 'd', 'e', 'f']):
-     a.annotate(an,
+        a.annotate(an,
              xy=(0.08, 0.92), xycoords='axes fraction', fontsize=12,
              ha="center", va="center",
              bbox=dict(boxstyle="square,pad=0.2",
              fc="silver", ec="k", lw=2))
+        a.set_xticks([])
+        a.set_xticklabels('')
 
     fig.savefig('figures/roundrobin.png', bbox_inches='tight', dpi=200)
 
 
 
-plts(gdf)
+plts(gdf, analysts)
 plt.show()
 stop
 
