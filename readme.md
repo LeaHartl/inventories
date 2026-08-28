@@ -1,23 +1,17 @@
 # Scripts to process AGI glacier outline files		
 This repo contains various scripts that handle glacier outline files produced for the 5th Austrian glacier inventory (AGI5) and older inventory data sets. 		
-AGI5 data publication: https://doi.org/10.1594/PANGAEA.991106		
+**AGI5 data publication**: https://doi.org/10.1594/PANGAEA.991106		
 
-AGI5 paper (accepted preprint): https://doi.org/10.5194/egusphere-2026-1241
+**AGI5 paper (accepted preprint)**: https://doi.org/10.5194/egusphere-2026-1241
 
 Other relevant data publications:
-AGI1, 2, 3, and LIA (data publication series): https://doi.org/10.1594/PANGAEA.844988
-
-AGI4: https://doi.org/10.1594/PANGAEA.887415 	
-
-Glacier inventory Austrian Silvretta 2017/2018: https://doi.org/10.1594/PANGAEA.936109	
-
-Glacier inventory Ötztal Alps 2017: https://doi.org/10.1594/PANGAEA.965798	
-
-Glacier inventory Stubai Alps 2017/2018: https://doi.org/10.1594/PANGAEA.965791	
-
-Area and volume change of glaciers in the Salzburg region, Austria: a new inventory (2008-2018) (dataset bundled publication): https://doi.org/10.1594/PANGAEA.984878	
-
-Vorarlberg (Austria) Glacier outlines, 2017-2020-2022-2023: https://doi.org/10.1594/PANGAEA.984116	
+- AGI1, 2, 3, and LIA (data publication series): https://doi.org/10.1594/PANGAEA.844988
+- AGI4: https://doi.org/10.1594/PANGAEA.887415 	
+- Glacier inventory Austrian Silvretta 2017/2018: https://doi.org/10.1594/PANGAEA.936109
+- Glacier inventory Ötztal Alps 2017: https://doi.org/10.1594/PANGAEA.965798	
+- Glacier inventory Stubai Alps 2017/2018: https://doi.org/10.1594/PANGAEA.965791	
+- Area and volume change of glaciers in the Salzburg region, Austria: a new inventory (2008-2018) (dataset bundled publication): https://doi.org/10.1594/PANGAEA.984878	
+- Vorarlberg (Austria) Glacier outlines, 2017-2020-2022-2023: https://doi.org/10.1594/PANGAEA.984116	
 
 
 ### process_GI5_step3.py		
