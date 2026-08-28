@@ -1,6 +1,6 @@
 out/
 out_consistency/
-figs/
+figures/
 *.dat
 *.png
 **/.DS_Store
